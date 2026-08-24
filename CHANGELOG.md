@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `ApiResponseError` and `RateLimitError` now parse Dhan's
+  `{errorType, errorCode, errorMessage}` response envelope and expose it as
+  typed `errorCode`/`errorType`/`errorMessage` fields.
+
+### Changed
+
+- A `429` response (or a `DH-904` `errorCode` on any status) from the REST
+  API is now classified as `RateLimitError` instead of a generic
+  `ApiResponseError`. `HttpClient` reads the response's `Retry-After` header
+  into `retryAfterMs` and honors that delay before retrying a
+  safe-to-retry `GET`, mirroring the existing 5xx retry path.
+
 ## [1.0.0] - 2026-08-19
 
 ### Changed
