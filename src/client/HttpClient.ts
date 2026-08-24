@@ -8,7 +8,9 @@ import Bottleneck from "bottleneck";
 
 import { AuthResolver } from "../auth";
 import type { ApiTier } from "../constants";
+import { TradingErrorCode } from "../constants";
 import { ApiResponseError, NetworkError, RateLimitError } from "../errors";
+import { parseDhanErrorBody } from "../errors/ApiResponseError";
 import type { DhanClientConfig } from "../types/common.types";
 import type { Logger } from "../types/logger.types";
 import {
@@ -159,6 +161,10 @@ export class HttpClient {
         this.shouldRetry(normalized) &&
         options.method === "GET"
       ) {
+        if (normalized instanceof RateLimitError && normalized.retryAfterMs) {
+          await sleep(normalized.retryAfterMs);
+        }
+
         const response = await this.axiosInstance.request<TResponse>(
           await this.toAxiosConfig(options),
         );
@@ -190,6 +196,7 @@ export class HttpClient {
   private shouldRetry(error: unknown): boolean {
     return (
       error instanceof NetworkError ||
+      error instanceof RateLimitError ||
       (error instanceof ApiResponseError &&
         error.status !== undefined &&
         error.status >= 500)
@@ -213,10 +220,26 @@ export class HttpClient {
       const axiosError = error as AxiosError;
 
       if (axiosError.response) {
+        const status = axiosError.response.status;
+        const payload = this.extractErrorPayload(axiosError.response);
+        const { errorCode } = parseDhanErrorBody(payload);
+
+        if (status === 429 || errorCode === TradingErrorCode.RATE_LIMIT) {
+          return new RateLimitError(
+            `Dhan API rate limit exceeded (status ${status})`,
+            {
+              status,
+              details: payload,
+              cause: error,
+              retryAfterMs: this.extractRetryAfterHeader(axiosError.response),
+            },
+          );
+        }
+
         return new ApiResponseError(
-          `Dhan API request failed with status ${axiosError.response.status}`,
-          axiosError.response.status,
-          this.extractErrorPayload(axiosError.response),
+          `Dhan API request failed with status ${status}`,
+          status,
+          payload,
           error,
         );
       }
@@ -263,6 +286,20 @@ export class HttpClient {
 
     return response.data;
   }
+
+  /**
+   * Reads the standard `Retry-After` header (delay-seconds form — Dhan does
+   * not send the HTTP-date form) off a 429 response, in milliseconds.
+   */
+  private extractRetryAfterHeader(response: AxiosResponse<unknown>): number | undefined {
+    const header = response.headers?.["retry-after"];
+    const seconds = Number(Array.isArray(header) ? header[0] : header);
+    return Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : undefined;
+  }
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function isAxiosLikeError(error: unknown): error is AxiosError {

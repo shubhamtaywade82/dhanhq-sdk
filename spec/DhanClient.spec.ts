@@ -8,6 +8,7 @@ import {
   HttpClient,
   MarketFeedWS,
   OrderUpdateWS,
+  RateLimitError,
   ValidationError,
 } from "../src";
 
@@ -305,6 +306,124 @@ describe("DhanClient", () => {
     ).rejects.toBeInstanceOf(ApiResponseError);
 
     expect(axiosStub.requests).toHaveLength(1);
+  });
+
+  it("classifies a 429 response as RateLimitError with the parsed error body and Retry-After header", async () => {
+    const axiosStub = createAxiosStub();
+    axiosStub.enqueueFailure({
+      isAxiosError: true,
+      response: {
+        status: 429,
+        data: {
+          errorType: "Rate_Limit",
+          errorCode: "DH-904",
+          errorMessage: "Too many requests",
+        },
+        headers: { "retry-after": "2" },
+      },
+      message: "rate limited",
+      name: "AxiosError",
+    } as never);
+
+    const httpClient = new HttpClient(
+      { token: "token", clientId: "client-id" },
+      { axiosInstance: axiosStub.axiosInstance },
+    );
+
+    const error = await httpClient
+      .request({ method: "GET", url: "/orders" })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(RateLimitError);
+    const rateLimitError = error as RateLimitError;
+    expect(rateLimitError.status).toBe(429);
+    expect(rateLimitError.retryAfterMs).toBe(2000);
+    expect(rateLimitError.errorCode).toBe("DH-904");
+    expect(rateLimitError.errorType).toBe("Rate_Limit");
+    expect(rateLimitError.errorMessage).toBe("Too many requests");
+  });
+
+  it("classifies a DH-904 error body as RateLimitError even without HTTP 429", async () => {
+    const axiosStub = createAxiosStub();
+    axiosStub.enqueueFailure({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: { errorType: "Rate_Limit", errorCode: "DH-904" },
+      },
+      message: "rate limited",
+      name: "AxiosError",
+    } as never);
+
+    const httpClient = new HttpClient(
+      { token: "token", clientId: "client-id" },
+      { axiosInstance: axiosStub.axiosInstance },
+    );
+
+    await expect(
+      httpClient.request({ method: "GET", url: "/orders" }),
+    ).rejects.toBeInstanceOf(RateLimitError);
+  });
+
+  it("retries a safe-to-retry GET after a 429, waiting for the Retry-After delay", async () => {
+    const axiosStub = createAxiosStub();
+    axiosStub.enqueueFailure({
+      isAxiosError: true,
+      response: {
+        status: 429,
+        data: { errorCode: "DH-904" },
+        headers: { "retry-after": "0" },
+      },
+      message: "rate limited",
+      name: "AxiosError",
+    } as never);
+    axiosStub.enqueueSuccess({ orders: [] });
+
+    const httpClient = new HttpClient(
+      { token: "token", clientId: "client-id" },
+      { axiosInstance: axiosStub.axiosInstance },
+    );
+
+    const result = await httpClient.request({
+      method: "GET",
+      url: "/orders",
+      safeToRetry: true,
+    });
+
+    expect(result).toEqual({ orders: [] });
+    expect(axiosStub.requests).toHaveLength(2);
+  });
+
+  it("exposes the parsed Dhan error body on ApiResponseError for non-rate-limit failures", async () => {
+    const axiosStub = createAxiosStub();
+    axiosStub.enqueueFailure({
+      isAxiosError: true,
+      response: {
+        status: 400,
+        data: {
+          errorType: "Order_Error",
+          errorCode: "DH-906",
+          errorMessage: "Invalid order type",
+        },
+      },
+      message: "bad request",
+      name: "AxiosError",
+    } as never);
+
+    const httpClient = new HttpClient(
+      { token: "token", clientId: "client-id" },
+      { axiosInstance: axiosStub.axiosInstance },
+    );
+
+    const error = await httpClient
+      .request({ method: "GET", url: "/orders" })
+      .catch((e: unknown) => e);
+
+    expect(error).toBeInstanceOf(ApiResponseError);
+    const apiError = error as ApiResponseError;
+    expect(apiError.errorCode).toBe("DH-906");
+    expect(apiError.errorType).toBe("Order_Error");
+    expect(apiError.errorMessage).toBe("Invalid order type");
   });
 
   it("opens the circuit breaker after repeated 5xx failures and short-circuits further calls", async () => {
