@@ -73,7 +73,13 @@ export default defineConfig({
           { text: "Orders", link: "/api/orders" },
           { text: "Option Chain", link: "/api/option-chain" },
           { text: "Market Feed", link: "/api/market-feed" },
+          { text: "Expired Options Data", link: "/api/expired-options" },
           { text: "Portfolio & Funds", link: "/api/portfolio" },
+          { text: "Forever Orders (GTT)", link: "/api/forever-orders" },
+          { text: "Conditional Triggers", link: "/api/conditional-triggers" },
+          { text: "eDIS", link: "/api/edis" },
+          { text: "Trader's Control", link: "/api/trader-controls" },
+          { text: "Global Stocks", link: "/api/global-stocks" },
         ],
       },
       {

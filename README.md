@@ -133,9 +133,9 @@ const chain = await client.optionChain.fetchNormalized({
 
 // Expired options data (historical backtesting for expired options)
 const expiredData = await client.expiredOptionsData.fetch({
-  securityId: 13,
+  securityId: 13, // Nifty 50 — the UNDERLYING, not the option contract
   exchangeSegment: "NSE_FNO",
-  instrument: "INDEX",
+  instrument: "OPTIDX",
   expiryFlag: "WEEK",
   expiryCode: 1,
   strike: "ATM",
@@ -562,13 +562,13 @@ Price- or indicator-based triggers, distinct from Forever Orders — see
 (RSI, SMA, ...), or one indicator crossing another.
 
 ```ts
-// Buy NIFTY 24500 CE once the Nifty spot crosses 24,500
+// Buy a NIFTY option once the Nifty spot crosses 24,500
 await client.conditionalTriggers.place({
   dhanClientId: process.env.DHAN_CLIENT_ID!,
   condition: {
     comparisonType: "PRICE_WITH_VALUE",
     exchangeSegment: "IDX_I",
-    securityId: "1333", // Nifty 50 index
+    securityId: "13", // Nifty 50 index
     operator: "GREATER_THAN",
     comparingValue: 24500,
     frequency: "ONCE",
@@ -580,7 +580,7 @@ await client.conditionalTriggers.place({
       productType: "INTRADAY",
       orderType: "MARKET",
       validity: "DAY",
-      securityId: "44000", // NIFTY 24500 CE
+      securityId: "44000", // the FNO contract to buy when triggered
       quantity: 50,
     },
   ],
@@ -592,7 +592,7 @@ Or build the condition with a helper instead of writing it by hand:
 ```ts
 const condition = ConditionalTriggers.buildPriceCondition({
   exchangeSegment: "IDX_I",
-  securityId: "1333",
+  securityId: "13",
   triggerAbove: 24500,
 });
 ```

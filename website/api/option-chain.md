@@ -7,6 +7,10 @@ description: Fetch option chains, expiry lists, compute Greeks (delta, gamma, th
 
 Fetch option chains, expiry lists, and compute options analytics including Greeks, implied volatility, max pain, and put-call ratio.
 
+The option chain covers **live** contracts only. For historical data on
+**expired** contracts (backtesting), see
+[Expired Options Data](/api/expired-options).
+
 ## Option Chain
 
 ### Expiry List

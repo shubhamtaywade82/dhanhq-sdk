@@ -5,7 +5,13 @@
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/orders</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/option-chain</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/market-feed</loc><priority>0.8</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/expired-options</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/portfolio</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/forever-orders</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/conditional-triggers</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/edis</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/trader-controls</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/global-stocks</loc><priority>0.7</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/websocket/market-feed</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/websocket/order-updates</loc><priority>0.7</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/analytics/technical-analysis</loc><priority>0.8</priority></url>

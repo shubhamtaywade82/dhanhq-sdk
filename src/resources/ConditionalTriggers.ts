@@ -65,7 +65,7 @@ export type ModifyConditionalTriggerRequest = Partial<PlaceConditionalTriggerReq
  * - TECHNICAL_WITH_INDICATOR: Trigger when one indicator crosses another (e.g., SMA_20 > SMA_50)
  * - Multiple orders can be triggered from a single condition
  *
- * @see https://dhan.co/help/docs/api/v2/#alerts-orders
+ * @see https://docs.dhanhq.co/api/v2/conditional-triggers
  */
 export class ConditionalTriggers {
   constructor(private readonly httpClient: HttpClient) {}
@@ -97,13 +97,13 @@ export class ConditionalTriggers {
    *
    * @example
    * ```ts
-   * // Price-based trigger: Buy NIFTY 24500 CE when Nifty spot crosses 24,500
+   * // Price-based trigger: buy a NIFTY option when the index spot crosses 24,500
    * await client.conditionalTriggers.place({
    *   dhanClientId: process.env.DHAN_CLIENT_ID!,
    *   condition: {
    *     comparisonType: "PRICE_WITH_VALUE",
    *     exchangeSegment: "IDX_I",
-   *     securityId: "1333", // Nifty 50 index
+   *     securityId: "13", // NIFTY 50 index
    *     operator: "GREATER_THAN",
    *     comparingValue: 24500,
    *     frequency: "ONCE",
@@ -114,7 +114,7 @@ export class ConditionalTriggers {
    *     productType: "INTRADAY",
    *     orderType: "MARKET",
    *     validity: "DAY",
-   *     securityId: "44000", // NIFTY 24500 CE
+   *     securityId: "44000", // the FNO contract to buy when triggered
    *     quantity: 50,
    *   }],
    * });
@@ -180,7 +180,7 @@ export class ConditionalTriggers {
    * ```ts
    * const condition = ConditionalTriggers.buildPriceCondition({
    *   exchangeSegment: "IDX_I",
-   *   securityId: "1333", // Nifty
+   *   securityId: "13", // NIFTY 50 index
    *   triggerAbove: 24500, // Trigger when Nifty goes above 24500
    * });
    * ```

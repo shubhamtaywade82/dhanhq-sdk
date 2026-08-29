@@ -41,7 +41,7 @@ export interface ExpiredOptionsDataResponse {
  * Fetches historical data for expired F&O contracts — essential for
  * backtesting options strategies against past expiry series.
  * 
- * @see https://dhan.co/help/docs/api/v2/#expired-options-data
+ * @see https://docs.dhanhq.co/api/v2/expired-options-data
  */
 export class ExpiredOptionsData {
   constructor(private readonly httpClient: HttpClient) {}
@@ -51,32 +51,33 @@ export class ExpiredOptionsData {
    * 
    * @example
    * ```ts
-   * // Fetch NIFTY weekly 24000 CE expired data for January 2026
+   * // Fetch NIFTY weekly ATM call data for January 2026
+   * // securityId is the UNDERLYING (13 = NIFTY 50), not the option contract
    * const data = await client.expiredOptionsData.fetch({
-   *   securityId: "1333", // Nifty 50 index
+   *   securityId: 13,
    *   exchangeSegment: "NSE_FNO",
-   *   instrumentType: "INDEX",
-   *   expiryFlag: "WEEKLY",
-   *   expiryCode: 1, // 1st weekly expiry
+   *   instrument: "OPTIDX",
+   *   expiryFlag: "WEEK", // "WEEK" | "MONTH" — the API does not accept "WEEKLY"
+   *   expiryCode: 1, // 1 = Near, 2 = Next, 3 = Far expiry
    *   strike: "ATM",
    *   drvOptionType: "CALL",
    *   requiredData: ["open", "high", "low", "close", "volume"],
    *   fromDate: "2026-01-01",
-   *   toDate: "2026-01-31",
+   *   toDate: "2026-02-01",
    * });
    * 
-   * // Fetch BANKNIFTY monthly 48000 PE expired data
+   * // Fetch BANKNIFTY monthly ATM-1 put data for December 2025
    * const peData = await client.expiredOptionsData.fetch({
-   *   securityId: "1334", // Bank Nifty index
+   *   securityId: 25, // NIFTY Bank index
    *   exchangeSegment: "NSE_FNO",
-   *   instrumentType: "INDEX",
-   *   expiryFlag: "MONTHLY",
+   *   instrument: "OPTIDX",
+   *   expiryFlag: "MONTH",
    *   expiryCode: 1,
    *   strike: "ATM-1", // One strike below ATM
    *   drvOptionType: "PUT",
    *   requiredData: ["close", "volume", "oi"],
    *   fromDate: "2025-12-01",
-   *   toDate: "2025-12-31",
+   *   toDate: "2026-01-01",
    * });
    * ```
    */
