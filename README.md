@@ -487,13 +487,16 @@ order exists → track it; not found → decide explicitly whether to re-place
 
 ### 3. No Blind Retries
 
-Order placement is **never auto-retried**.
+Order placement is **never auto-retried**. Any request not marked
+`safeToRetry: true` — every trading write — is sent at most once, whatever
+the failure: timeout, `5xx`, or a `401` that triggers token renewal (the
+token is renewed, the write is not resent; it raises `AuthenticationError`).
 
-Only safe retries are allowed for non-order operations such as:
+Only read-only requests are retried, once, on:
 
-- transient network failures
-- selected `5xx` responses
-- auth refresh on `401` when a token provider is configured
+- transient network failures (GET)
+- selected `5xx` responses (GET)
+- `401`, after `onTokenExpired` / token-provider refresh
 
 ---
 

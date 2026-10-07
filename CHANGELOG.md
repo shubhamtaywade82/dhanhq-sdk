@@ -6,6 +6,26 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Safety:** a `401` on a trading write (any request not marked
+  `safeToRetry: true` — order place/modify/cancel/slice, super, forever,
+  conditional and Global Stocks orders, exit-all, P&L exit, kill switch, IP
+  setup) no longer replays the request after token renewal. The token is
+  still renewed via `onTokenExpired`; the request is sent exactly once and an
+  `AuthenticationError` (`status: 401`, `cause`: the `ApiResponseError`) is
+  thrown. Read-only requests keep the renew-and-retry-once behaviour.
+
+### Added
+
+- `OptionLeg.average_price` (Option Chain v2.5) and v2.5 response-contract
+  regression tests.
+
+### Changed
+
+- Docs: `correlationId` is described as a correlation/lookup tag, not an
+  idempotency key, with the timeout → lookup → no-replay recovery flow.
+
 ## [1.1.0] - 2026-08-24
 
 ### Added
