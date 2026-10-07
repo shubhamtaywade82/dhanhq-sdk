@@ -38,11 +38,30 @@ const client = new DhanClient({
   clientId: process.env.DHAN_CLIENT_ID!,
   tokenProvider: async () => vault.read("dhan/access-token"),
   onTokenExpired: async (error) => {
-    // Called on a 401 before the SDK retries once with a re-resolved token.
+    // Called on every 401. Read-only requests are then retried once with a
+    // re-resolved token; trading writes are NOT resent (see below).
     await vault.refresh("dhan/access-token");
   },
 });
 ```
+
+#### 401 replay policy
+
+| Request | On 401 | Resent automatically |
+|---|---|---|
+| Read-only (`safeToRetry: true`: GETs, quotes, option chain, charts, margin calculators, …) | `onTokenExpired`, then retry once | Yes, once |
+| Any other request — order place/modify/cancel/slice, super/forever/conditional orders, Global Stocks orders, exit-all, P&L exit, kill switch, IP setup, eDIS form/bulk form (until their replay semantics are verified), … | `onTokenExpired` | **No** |
+
+A non-replayable request that gets a 401 raises `AuthenticationError`
+(`status: 401`, `context` = `"<METHOD> <url>"`, `cause` = the original
+`ApiResponseError`). The token is renewed so the *next* call works, but the
+request itself is never replayed: duplicate-order safety does not rely on
+Dhan rejecting expired tokens before execution. Retrying is the caller's
+explicit decision. If `onTokenExpired` itself throws, the 401 is still what
+you get, with the renewal failure under `error.details.tokenRenewalError`.
+
+A 401 is a definitive rejection, not an unknown outcome — unlike a timeout it
+does not call for a `getByCorrelationId` lookup.
 
 The provider is not memoized. If yours is expensive, cache inside it.
 
@@ -176,9 +195,10 @@ try {
 `error.message` is the part that matters: "Invalid PIN" and "TOTP expired"
 need different fixes, and the HTTP status alone does not distinguish them.
 
-A 401 on a normal API call surfaces as `ApiResponseError`, not
-`AuthenticationError` — `AuthenticationError` is specifically about obtaining
-a token.
+A 401 on a read-only API call surfaces as `ApiResponseError` (after the one
+retry). A 401 on a non-replayable request — any trading write — surfaces as
+`AuthenticationError` wrapping that `ApiResponseError`, so "rejected, not
+resent" is distinguishable from every other failure.
 
 ## Partner authentication
 

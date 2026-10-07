@@ -9,7 +9,12 @@ import Bottleneck from "bottleneck";
 import { AuthResolver } from "../auth";
 import type { ApiTier } from "../constants";
 import { TradingErrorCode } from "../constants";
-import { ApiResponseError, NetworkError, RateLimitError } from "../errors";
+import {
+  ApiResponseError,
+  AuthenticationError,
+  NetworkError,
+  RateLimitError,
+} from "../errors";
 import { parseDhanErrorBody } from "../errors/ApiResponseError";
 import type { DhanClientConfig } from "../types/common.types";
 import type { Logger } from "../types/logger.types";
@@ -28,6 +33,12 @@ export interface RequestOptions<TBody = unknown> {
   data?: TBody;
   params?: Record<string, unknown>;
   headers?: Record<string, string>;
+  /**
+   * `true` only for requests with no side effects. Anything else — including
+   * omitting the flag — is never replayed by the transport: not after a
+   * timeout, not after a 5xx, and not after a 401 that triggered token
+   * renewal. Trading writes must leave this `false`.
+   */
   safeToRetry?: boolean;
   /**
    * Enforces the documented Dhan rate limit for this endpoint (`RATE_LIMITS`)
@@ -149,6 +160,10 @@ export class HttpClient {
       const normalized = this.normalizeError(error);
 
       if (this.isAuthenticationFailure(normalized)) {
+        if (options.safeToRetry !== true) {
+          throw await this.rejectUnreplayableAfterAuthFailure(options, normalized);
+        }
+
         await this.authResolver.handleTokenExpired(normalized);
         const response = await this.axiosInstance.request<TResponse>(
           await this.toAxiosConfig(options),
@@ -173,6 +188,49 @@ export class HttpClient {
 
       throw normalized;
     }
+  }
+
+  /**
+   * A 401 on a non-replayable request (any trading write): renew the token so
+   * the *next* call succeeds, but never resend this one. Dhan rejecting an
+   * expired token before execution is an implementation detail the SDK does
+   * not rely on for duplicate-order safety. The 401 is the outcome reported
+   * to the caller, even when renewal itself fails.
+   */
+  private async rejectUnreplayableAfterAuthFailure<TBody>(
+    options: RequestOptions<TBody>,
+    error: ApiResponseError,
+  ): Promise<AuthenticationError> {
+    let tokenRenewalError: unknown;
+    try {
+      await this.authResolver.handleTokenExpired(error);
+    } catch (renewalError) {
+      tokenRenewalError = renewalError;
+      this.logger?.warn("Token renewal failed after 401 on a non-replayable request", {
+        method: options.method,
+        url: options.url,
+        error: renewalError instanceof Error ? renewalError.message : String(renewalError),
+      });
+    }
+
+    this.logger?.warn("401 on non-replayable request; token renewed, request NOT resent", {
+      method: options.method,
+      url: options.url,
+      errorCode: error.errorCode,
+    });
+
+    return new AuthenticationError(
+      `${options.method} ${options.url}`,
+      "rejected with 401; request was not resent — retry explicitly once the token is valid",
+      {
+        status: 401,
+        details:
+          tokenRenewalError === undefined
+            ? error.details
+            : { response: error.details, tokenRenewalError },
+        cause: error,
+      },
+    );
   }
 
   private async toAxiosConfig<TBody>(
@@ -203,7 +261,7 @@ export class HttpClient {
     );
   }
 
-  private isAuthenticationFailure(error: unknown): boolean {
+  private isAuthenticationFailure(error: unknown): error is ApiResponseError {
     return (
       error instanceof ApiResponseError &&
       error.status !== undefined &&

@@ -72,7 +72,7 @@ export class Charts {
       method: "POST",
       url: "/charts/rollingoption",
       data: request,
-      safeToRetry: false,
+      safeToRetry: true,
     });
   }
 
@@ -101,7 +101,7 @@ export class Charts {
       method: "POST",
       url: "/charts/intraday",
       data: payload,
-      safeToRetry: false,
+      safeToRetry: true,
     });
   }
 
@@ -130,7 +130,7 @@ export class Charts {
       method: "POST",
       url: "/charts/historical",
       data: payload,
-      safeToRetry: false,
+      safeToRetry: true,
     });
   }
 }

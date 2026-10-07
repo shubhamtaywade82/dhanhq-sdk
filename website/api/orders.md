@@ -33,9 +33,29 @@ WebSocket order-update stream even if the REST call times out.
 
 Every order gets a `correlationId` — supply your own or one is generated —
 for:
-- **Idempotency** — a stable key to check before retrying
-- **Recovery** — look up via `client.orders.getByCorrelationId(id)`
+- **Recovery** — after an uncertain write, look up via
+  `client.orders.getByCorrelationId(id)` before deciding anything
 - **Traceability** — matches order placement to WebSocket fill updates
+
+It is a correlation tag, **not an idempotency key** — Dhan does not
+de-duplicate on it, so replaying a POST with the same `correlationId` can
+create a second order. On a placement timeout the SDK throws `NetworkError`
+and never re-sends; resolve the outcome with a lookup:
+
+```ts
+try {
+  await client.orders.place({ ...params, correlationId: "entry-001" });
+} catch (error) {
+  if (error instanceof NetworkError) {
+    // Outcome unknown: the order may or may not exist at the exchange.
+    // If this lookup also fails, the outcome is STILL unknown — keep
+    // watching the order-update WebSocket rather than re-placing.
+    const existing = await client.orders.getByCorrelationId("entry-001");
+    // existing → track it; only a confirmed "no such order" justifies a new,
+    // explicitly-initiated placement
+  }
+}
+```
 
 ```ts
 const order = await client.orders.place({

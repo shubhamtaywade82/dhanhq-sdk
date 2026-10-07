@@ -458,9 +458,22 @@ WebSocket Engine        TA / Analytics / Risk
 
 Every trading order should include a `correlationId` for:
 
-- idempotency
-- recovery via `/orders/external/{id}`
+- recovery via `/orders/external/{id}` after an uncertain write
 - traceability across order placement and execution updates
+
+`correlationId` is a **correlation tag, not an idempotency key**. Dhan does not
+de-duplicate on it: re-sending the same POST with the same `correlationId` can
+create a second order. After a timeout or connection failure on placement:
+
+```text
+POST /orders  →  timeout / network error
+      ↓
+DO NOT replay the POST
+      ↓
+GET /orders/external/{correlationId}  (client.orders.getByCorrelationId)
+      ↓
+order exists → track it; not found → decide explicitly whether to re-place
+```
 
 ---
 
@@ -474,13 +487,16 @@ Every trading order should include a `correlationId` for:
 
 ### 3. No Blind Retries
 
-Order placement is **never auto-retried**.
+Order placement is **never auto-retried**. Any request not marked
+`safeToRetry: true` — every trading write — is sent at most once, whatever
+the failure: timeout, `5xx`, or a `401` that triggers token renewal (the
+token is renewed, the write is not resent; it raises `AuthenticationError`).
 
-Only safe retries are allowed for non-order operations such as:
+Only read-only requests are retried, once, on:
 
-- transient network failures
-- selected `5xx` responses
-- auth refresh on `401` when a token provider is configured
+- transient network failures (GET)
+- selected `5xx` responses (GET)
+- `401`, after `onTokenExpired` / token-provider refresh
 
 ---
 

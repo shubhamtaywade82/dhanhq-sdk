@@ -37,7 +37,11 @@ export interface OptionLeg {
   top_ask_quantity?: number;
   top_bid_price?: number;
   top_bid_quantity?: number;
+  /** Tradable security ID of this leg (added to the response in API v2.5). */
   security_id?: string | number;
+  /** Average traded price of this leg for the session (added in API v2.5). */
+  average_price?: number;
+  /** Fields Dhan adds later pass through `normalizeOptionChain` untouched. */
   [key: string]: unknown;
 }
 
@@ -125,7 +129,8 @@ export class OptionChain {
 /**
  * Flattens the `oc` map (keyed by a stringified float strike) into a sorted
  * array. Strikes that do not parse as numbers are dropped rather than sorted
- * to the front as `NaN`.
+ * to the front as `NaN`. Each leg object is passed through by reference, so
+ * every field the API returns (including ones not yet typed here) survives.
  */
 export function normalizeOptionChain(
   response: RawOptionChainResponse,
