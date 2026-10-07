@@ -458,9 +458,22 @@ WebSocket Engine        TA / Analytics / Risk
 
 Every trading order should include a `correlationId` for:
 
-- idempotency
-- recovery via `/orders/external/{id}`
+- recovery via `/orders/external/{id}` after an uncertain write
 - traceability across order placement and execution updates
+
+`correlationId` is a **correlation tag, not an idempotency key**. Dhan does not
+de-duplicate on it: re-sending the same POST with the same `correlationId` can
+create a second order. After a timeout or connection failure on placement:
+
+```text
+POST /orders  →  timeout / network error
+      ↓
+DO NOT replay the POST
+      ↓
+GET /orders/external/{correlationId}  (client.orders.getByCorrelationId)
+      ↓
+order exists → track it; not found → decide explicitly whether to re-place
+```
 
 ---
 

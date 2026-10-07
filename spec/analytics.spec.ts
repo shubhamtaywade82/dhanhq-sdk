@@ -198,3 +198,71 @@ describe("option chain normalization", () => {
     );
   });
 });
+
+describe("option chain v2.5 response contract", () => {
+  // Shape per Dhan v2.5: each leg carries `security_id` and `average_price`
+  // alongside the existing greeks / IV / OI / depth fields.
+  const v25 = {
+    status: "success",
+    data: {
+      last_price: 25642.8,
+      oc: {
+        "25650.000000": {
+          ce: {
+            security_id: 42528,
+            average_price: 146.99,
+            greeks: { delta: 0.53, theta: -15.15, gamma: 0.00132, vega: 12.18 },
+            implied_volatility: 9.79,
+            last_price: 134,
+            oi: 3786445,
+            previous_close_price: 244.85,
+            previous_oi: 402220,
+            previous_volume: 31931705,
+            top_ask_price: 134,
+            top_ask_quantity: 1365,
+            top_bid_price: 133.55,
+            top_bid_quantity: 1625,
+            volume: 117567970,
+          },
+          pe: {
+            security_id: 42529,
+            average_price: 120.5,
+            greeks: { delta: -0.47, theta: -12.1, gamma: 0.0013, vega: 12.1 },
+            implied_volatility: 10.1,
+            last_price: 118,
+            oi: 2100000,
+            volume: 90000000,
+            future_field: "kept",
+          },
+        },
+      },
+    },
+  };
+
+  it("preserves security_id and average_price through normalization", () => {
+    const [entry] = normalizeOptionChain(v25).strikes;
+
+    expect(entry?.strike).toBe(25650);
+    expect(entry?.call?.security_id).toBe(42528);
+    expect(entry?.call?.average_price).toBe(146.99);
+    expect(entry?.put?.security_id).toBe(42529);
+    expect(entry?.put?.average_price).toBe(120.5);
+  });
+
+  it("keeps the pre-v2.5 fields and any untyped extras intact", () => {
+    const [entry] = normalizeOptionChain(v25).strikes;
+
+    expect(entry?.call).toEqual(v25.data.oc["25650.000000"].ce);
+    expect(entry?.put).toEqual(v25.data.oc["25650.000000"].pe);
+    expect(entry?.put?.["future_field"]).toBe("kept");
+  });
+
+  it("treats legs without the v2.5 fields as valid (older payloads)", () => {
+    const [entry] = normalizeOptionChain({
+      data: { oc: { "100": { ce: { last_price: 1 } } } },
+    }).strikes;
+
+    expect(entry?.call?.security_id).toBeUndefined();
+    expect(entry?.call?.average_price).toBeUndefined();
+  });
+});

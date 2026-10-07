@@ -98,7 +98,7 @@ await client.foreverOrders.cancel(orderId);
 | `triggerPrice` | Trigger price |
 | `price1` / `triggerPrice1` / `quantity1` | Target leg — OCO orders only |
 | `validity` | `"1Year"` or `"Expiry"` |
-| `correlationId` | Optional idempotency key you supply |
+| `correlationId` | Optional correlation tag for lookup/reconciliation (not an idempotency key) |
 
 Forever orders are **writes** — the SDK never retries them automatically, and
 they are placed with `safeToRetry: false` so a timeout surfaces as an error for
