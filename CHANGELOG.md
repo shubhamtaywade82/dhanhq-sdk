@@ -6,29 +6,39 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-07
+
+### Changed
+
+- **Breaking (error type):** a `401` on a non-replayable request — any request
+  not marked `safeToRetry: true`, which includes every trading write — now
+  raises `AuthenticationError` (`status: 401`, `cause`: the original
+  `ApiResponseError`) instead of `ApiResponseError`. Callers matching
+  `instanceof ApiResponseError && status === 401` on writes must switch to
+  `AuthenticationError` or inspect `.cause`.
+- `safeToRetry` is now the sole replay authorization and fails closed: only an
+  explicit `true` permits any automatic resend; `false` and omitted never
+  replay.
+- Docs: `correlationId` is described as a correlation/lookup tag, not an
+  idempotency key, with the timeout → lookup → no-replay recovery flow.
+
 ### Fixed
 
-- **Safety:** a `401` on a trading write (any request not marked
-  `safeToRetry: true` — order place/modify/cancel/slice, super, forever,
-  conditional and Global Stocks orders, exit-all, P&L exit, kill switch, IP
-  setup) no longer replays the request after token renewal. The token is
-  still renewed via `onTokenExpired`; the request is sent exactly once and an
-  `AuthenticationError` (`status: 401`, `cause`: the `ApiResponseError`) is
-  thrown. Read-only requests keep the renew-and-retry-once behaviour.
+- **Safety:** a `401` on a trading write (order place/modify/cancel/slice,
+  super, forever, conditional and Global Stocks orders, exit-all, P&L exit,
+  kill switch, IP setup) no longer replays the request after token renewal.
+  The token is still renewed via `onTokenExpired`; the request is sent exactly
+  once. If renewal itself fails, the 401 is still reported, with the renewal
+  error under `details.tokenRenewalError`.
 - `Charts.intraday`, `Charts.historical`, `Charts.option`,
-  `Funds.calculateMargin` and `Funds.calculateMultiMargin` are now `safeToRetry: true`, so they recover from a
-  `401` by renewing the token and retrying once. eDIS form submissions stay
-  non-replayable.
+  `Funds.calculateMargin` and `Funds.calculateMultiMargin` are now
+  `safeToRetry: true`, so they recover from a `401` by renewing the token and
+  retrying once. eDIS form submissions stay non-replayable.
 
 ### Added
 
 - `OptionLeg.average_price` (Option Chain v2.5) and v2.5 response-contract
-  regression tests.
-
-### Changed
-
-- Docs: `correlationId` is described as a correlation/lookup tag, not an
-  idempotency key, with the timeout → lookup → no-replay recovery flow.
+  regression tests (`security_id`, `average_price`, untyped extras preserved).
 
 ## [1.1.0] - 2026-08-24
 
@@ -366,7 +376,8 @@ First release published to npm, as `@shubhamtaywade82/dhanhq-ts`.
 Initial pre-release: REST resources, contracts, WebSocket market feed and
 order updates, auth helpers, and the OpenAPI-generated transport layer.
 
-[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v0.4.2...v1.0.0
 [0.4.2]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v0.4.1...v0.4.2

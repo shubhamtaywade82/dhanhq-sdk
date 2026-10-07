@@ -1,6 +1,6 @@
 {
   "name": "@nemesis-oss/dhanhq-sdk",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Production-grade TypeScript SDK for DhanHQ API v2. Features REST APIs, WebSocket market data, option analytics, technical analysis, risk management, and MCP server tools for algorithmic trading agents.",
   "keywords": [
     "dhan",
