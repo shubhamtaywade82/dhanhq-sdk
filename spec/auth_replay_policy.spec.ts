@@ -7,8 +7,10 @@ import {
   AuthenticationError,
   NetworkError,
 } from "../src/errors";
+import { Charts } from "../src/resources/Charts";
 import { ConditionalTriggers } from "../src/resources/ConditionalTriggers";
 import { ForeverOrders } from "../src/resources/ForeverOrders";
+import { Funds } from "../src/resources/Funds";
 import { GlobalStocks } from "../src/resources/GlobalStocks";
 import { Orders } from "../src/resources/Orders";
 import { Positions } from "../src/resources/Positions";
@@ -146,6 +148,102 @@ describe("401 replay policy — reads", () => {
     expect(stub.requests).toHaveLength(2);
     expect(onTokenExpired).toHaveBeenCalledTimes(1);
   });
+});
+
+describe("401 replay policy — safeToRetry is the only replay authorization", () => {
+  it.each([
+    [true, 2],
+    [false, 1],
+    [undefined, 1],
+  ])("safeToRetry=%s → %i send(s) on 401", async (safeToRetry, sends) => {
+    const { httpClient, stub } = setup();
+    stub.fail(unauthorized());
+    stub.respond({ ok: true });
+
+    await httpClient
+      .request({ method: "POST", url: "/x", data: {}, safeToRetry })
+      .catch(() => undefined);
+
+    expect(stub.requests).toHaveLength(sends);
+  });
+});
+
+describe("401 replay policy — read-only POST resources", () => {
+  const range = { fromDate: "2026-09-01", toDate: "2026-09-04", autoAdjustDates: false };
+  const reads: Array<[string, string, (client: HttpClient) => Promise<unknown>]> = [
+    [
+      "Charts.intraday",
+      "/charts/intraday",
+      (c) =>
+        new Charts(c).intraday({
+          securityId: "1333",
+          exchangeSegment: "NSE_EQ",
+          instrument: "EQUITY",
+          interval: "5",
+          ...range,
+        }),
+    ],
+    [
+      "Charts.historical",
+      "/charts/historical",
+      (c) =>
+        new Charts(c).historical({
+          securityId: "1333",
+          exchangeSegment: "NSE_EQ",
+          instrument: "EQUITY",
+          ...range,
+        }),
+    ],
+    [
+      "Charts.option",
+      "/charts/rollingoption",
+      (c) =>
+        new Charts(c).option({
+          exchangeSegment: "NSE_FNO",
+          interval: "1",
+          securityId: 13,
+          instrument: "OPTIDX",
+          expiryCode: 1,
+          strike: "ATM",
+          drvOptionType: "CALL",
+          requiredData: "close",
+          fromDate: "2026-09-01",
+          toDate: "2026-09-04",
+        }),
+    ],
+    [
+      "Funds.calculateMargin",
+      "/margincalculator",
+      (c) =>
+        new Funds(c).calculateMargin({
+          exchangeSegment: "NSE_FNO",
+          transactionType: "BUY",
+          quantity: 75,
+          productType: "INTRADAY",
+          securityId: "52175",
+          price: 120,
+        }),
+    ],
+  ];
+
+  it.each(reads)(
+    "%s: renews the token, resends the same request once with it, returns the response",
+    async (_, url, call) => {
+      const { httpClient, stub, onTokenExpired } = setup();
+      stub.fail(unauthorized());
+      stub.respond({ result: "ok" });
+
+      await expect(call(httpClient)).resolves.toEqual({ result: "ok" });
+
+      expect(onTokenExpired).toHaveBeenCalledTimes(1);
+      expect(stub.requests).toHaveLength(2);
+      const [first, second] = stub.requests;
+      expect(first).toMatchObject({ method: "POST", url });
+      expect(second).toMatchObject({ method: "POST", url, data: first?.data });
+      expect(first?.headers).toMatchObject({ "access-token": "token-1" });
+      expect(second?.headers).toMatchObject({ "access-token": "token-2" });
+    },
+  );
 });
 
 describe("401 replay policy — trading writes", () => {

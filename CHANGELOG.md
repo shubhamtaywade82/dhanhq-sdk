@@ -15,6 +15,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   still renewed via `onTokenExpired`; the request is sent exactly once and an
   `AuthenticationError` (`status: 401`, `cause`: the `ApiResponseError`) is
   thrown. Read-only requests keep the renew-and-retry-once behaviour.
+- `Charts.intraday`, `Charts.historical`, `Charts.option` and
+  `Funds.calculateMargin` are now `safeToRetry: true`, so they recover from a
+  `401` by renewing the token and retrying once. eDIS form submissions stay
+  non-replayable.
 
 ### Added
 

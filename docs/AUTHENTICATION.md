@@ -49,8 +49,8 @@ const client = new DhanClient({
 
 | Request | On 401 | Resent automatically |
 |---|---|---|
-| Read-only (`safeToRetry: true`: GETs, quotes, option chain, …) | `onTokenExpired`, then retry once | Yes, once |
-| Any other request — order place/modify/cancel/slice, super/forever/conditional orders, Global Stocks orders, exit-all, P&L exit, kill switch, IP setup, … | `onTokenExpired` | **No** |
+| Read-only (`safeToRetry: true`: GETs, quotes, option chain, charts, single-scrip margin calculator, …) | `onTokenExpired`, then retry once | Yes, once |
+| Any other request — order place/modify/cancel/slice, super/forever/conditional orders, Global Stocks orders, exit-all, P&L exit, kill switch, IP setup, eDIS form/bulk form (until their replay semantics are verified), … | `onTokenExpired` | **No** |
 
 A non-replayable request that gets a 401 raises `AuthenticationError`
 (`status: 401`, `context` = `"<METHOD> <url>"`, `cause` = the original

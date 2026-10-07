@@ -52,7 +52,7 @@ export class Funds {
       method: "POST",
       url: "/margincalculator",
       data: request,
-      safeToRetry: false,
+      safeToRetry: true,
     });
   }
 
