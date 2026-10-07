@@ -224,6 +224,33 @@ describe("401 replay policy — read-only POST resources", () => {
           price: 120,
         }),
     ],
+    [
+      "Funds.calculateMultiMargin",
+      "/margincalculator/multi",
+      (c) =>
+        new Funds(c).calculateMultiMargin({
+          includePosition: true,
+          includeOrder: true,
+          scripList: [
+            {
+              exchangeSegment: "NSE_FNO",
+              transactionType: "BUY",
+              quantity: 75,
+              productType: "INTRADAY",
+              securityId: "52175",
+              price: 120,
+            },
+            {
+              exchangeSegment: "NSE_FNO",
+              transactionType: "BUY",
+              quantity: 75,
+              productType: "INTRADAY",
+              securityId: "52176",
+              price: 95,
+            },
+          ],
+        }),
+    ],
   ];
 
   it.each(reads)(
@@ -240,6 +267,7 @@ describe("401 replay policy — read-only POST resources", () => {
       const [first, second] = stub.requests;
       expect(first).toMatchObject({ method: "POST", url });
       expect(second).toMatchObject({ method: "POST", url, data: first?.data });
+      expect(JSON.stringify(second?.data)).toBe(JSON.stringify(first?.data));
       expect(first?.headers).toMatchObject({ "access-token": "token-1" });
       expect(second?.headers).toMatchObject({ "access-token": "token-2" });
     },
