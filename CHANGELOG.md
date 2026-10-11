@@ -6,18 +6,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Fixed
-
-- In `sandbox` mode, `connect()` on the market feed, order update and depth
-  WebSockets rejects at once with `SandboxUnsupportedError`. Dhan's sandbox has
-  no WebSocket and production rejects sandbox credentials, so the sockets
-  previously failed and retried indefinitely. `hybrid` and `live` are unchanged.
-
-### Added
-
-- `BaseWS.block(error)`: makes `connect()` reject with `error` and never open
-  or retry a socket.
-
 ## [1.3.0] - 2026-10-11
 
 ### Added
@@ -57,9 +45,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `npm run live-check` (`scripts/live-check.ts`): end-to-end read checks, the
   market-feed WebSocket, and an opt-in 1-share below-market LIMIT order that is
   placed and cancelled. Production orders require `LIVE_TRADING=true`.
+- `BaseWS.block(error)`: makes `connect()` reject with `error` and never open
+  or retry a socket.
 
 ### Fixed
 
+- In `sandbox` mode, `connect()` on the market feed, order update and depth
+  WebSockets rejects at once with `SandboxUnsupportedError`. Dhan's sandbox has
+  no WebSocket and production rejects sandbox credentials, so the sockets
+  previously failed and retried indefinitely. `hybrid` and `live` are unchanged.
 - **`marginCalculator`:** `calculateMulti()` (and the `bullCallSpread`,
   `bullPutSpread`, `ironCondor` helpers) posted a `scripList` to the
   single-order `/margincalculator` endpoint; it now calls
@@ -461,7 +455,8 @@ First release published to npm, as `@shubhamtaywade82/dhanhq-ts`.
 Initial pre-release: REST resources, contracts, WebSocket market feed and
 order updates, auth helpers, and the OpenAPI-generated transport layer.
 
-[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v0.4.2...v1.0.0

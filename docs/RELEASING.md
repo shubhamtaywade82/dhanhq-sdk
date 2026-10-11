@@ -27,15 +27,37 @@ has to exist.
    npm version minor   # or patch / major
    ```
 
-3. Push the commit and its tag:
+3. Push the commit and its tag — **this publishes to npm**:
 
    ```bash
    git push --follow-tags
    ```
 
-4. Publish a GitHub Release for the new tag. That triggers
-   `.github/workflows/publish.yml`, which runs `prepublishOnly`
-   (clean → typecheck → test → build) before pushing to npm.
+   `.github/workflows/publish.yml` runs on a pushed `v*` tag *and* on a
+   published GitHub Release; it typechecks, tests and builds before
+   `npm publish`.
+
+4. Add a GitHub Release for the tag with the CHANGELOG section as notes. Its
+   own publish run then fails with "cannot publish over the previously
+   published version" — expected, the package is already out.
+
+### When the version was bumped in a pull request
+
+If `package.json`, `package-lock.json` and the `CHANGELOG.md` heading were
+already moved to the new version in a PR, do **not** run `npm version` (it would
+bump again). Tag the PR's merge commit on `main` — a lightweight `vX.Y.Z` tag,
+as for `v1.0.0`–`v1.2.0` — which publishes:
+
+```bash
+git fetch origin
+git tag v1.3.0 <merge-commit-sha>
+git push origin v1.3.0
+```
+
+From the browser instead: *Releases → Draft a new release*, type the new tag
+`v1.3.0`, set **Target** to the merge commit (or a branch pointing at it — not
+`main` if `main` has moved on), paste the CHANGELOG section and publish. That
+creates the tag and publishes in one step.
 
 `workflow_dispatch` on the same workflow can publish manually, including under
 a non-`latest` dist-tag for prereleases.
