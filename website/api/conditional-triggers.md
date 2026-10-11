@@ -125,6 +125,40 @@ await client.conditionalTriggers.modify(alertId, {
 await client.conditionalTriggers.cancel(alertId);
 ```
 
+## Multi Orders
+
+`client.alerts.placeMulti()` sends several orders in one request
+(`POST /alerts/multi/orders`). It is a trading write — never retried — and
+production only.
+
+```ts
+await client.alerts.placeMulti({
+  orders: [
+    {
+      sequence: "1",
+      transactionType: "BUY",
+      exchangeSegment: "NSE_FNO",
+      productType: "INTRADAY",
+      orderType: "LIMIT",
+      validity: "DAY",
+      securityId: "44000",
+      quantity: 75,
+      price: 120,
+      correlationId: "leg-1", // at most 30 characters
+    },
+  ],
+});
+```
+
+`dhanClientId` defaults to the client's. Each leg needs `sequence`,
+`transactionType` and `exchangeSegment`; the call throws before sending
+otherwise.
+
+## Sandbox
+
+Conditional triggers and multi orders are not served by the Dhan sandbox: in
+`sandbox` or `hybrid` mode they throw `SandboxUnsupportedError`.
+
 ## Condition Fields
 
 | Field | Values |

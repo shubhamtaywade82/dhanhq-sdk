@@ -87,7 +87,8 @@ export type MarketFeedEvent =
   | MarketQuoteEvent
   | MarketOiEvent
   | MarketFullEvent
-  | MarketDisconnectEvent;
+  | MarketDisconnectEvent
+  | MarketStatusEvent;
 
 export interface OrderUpdateEvent {
   type: "order_alert";
@@ -129,6 +130,20 @@ export interface MarketDepth200Event {
 }
 
 export type MarketDepthEvent = MarketDepth20Event | MarketDepth200Event;
+
+/** The depth server closing the connection (response code 50), e.g. 805 for too many sockets. */
+export interface MarketDepthDisconnectEvent {
+  type: "depth-disconnect";
+  securityId: string;
+  exchangeSegment: string;
+  reasonCode?: number;
+}
+
+/** Market open/close notification (response code 7); header only. */
+export interface MarketStatusEvent extends MarketPacketHeader {
+  type: "market-status";
+  raw: Buffer;
+}
 export type MarketDepthMode = "twenty" | "twohundred";
 
 export interface MarketFeedWSOptions {

@@ -1,19 +1,12 @@
+import { exchangeSegmentForCode } from "../../constants";
 import type {
+  MarketDepthDisconnectEvent,
   MarketDepth20Event,
   MarketDepth20Level,
   MarketDepth200Event,
   MarketDepthEvent,
 } from "../../types/ws.types";
 
-const SEGMENT_CODE_MAP: Record<number, string> = {
-  1: "NSE_EQ",
-  2: "NSE_FNO",
-  3: "BSE_EQ",
-  4: "BSE_FNO",
-  5: "MCX_COMM",
-  6: "NSE_CURRENCY",
-  7: "IDX_I",
-};
 
 /**
  * Parses a 20-level market depth packet stream from `wss://depth-api-feed.dhan.co/twentydepth`.
@@ -33,6 +26,7 @@ const SEGMENT_CODE_MAP: Record<number, string> = {
 export function parseMarketDepth20Packet(
   buf: Buffer,
   subscriptions?: Array<{ securityId: string; exchangeSegment: string }>,
+  disconnects?: MarketDepthDisconnectEvent[],
 ): MarketDepth20Event[] {
   const results: MarketDepth20Event[] = [];
   let offset = 0;
@@ -45,6 +39,12 @@ export function parseMarketDepth20Packet(
 
     if (msgLen < 12 || offset + msgLen > buf.length) {
       break;
+    }
+
+    if (responseCode === 50) {
+      disconnects?.push(parseDepthDisconnect(buf, offset, segCode, secId));
+      offset += msgLen;
+      continue;
     }
 
     if (responseCode !== 41 && responseCode !== 51) {
@@ -78,8 +78,7 @@ export function parseMarketDepth20Packet(
     const subMatch = subscriptions?.find((s) => s.securityId === secId);
     const exchangeSegment =
       subMatch?.exchangeSegment ??
-      SEGMENT_CODE_MAP[segCode] ??
-      `SEGMENT_${segCode}`;
+      exchangeSegmentForCode(segCode);
 
     const packetSlice = buf.subarray(offset, offset + msgLen);
 
@@ -115,6 +114,7 @@ export function parseMarketDepth20Packet(
 export function parseMarketDepth200Packet(
   buf: Buffer,
   subscriptions?: Array<{ securityId: string; exchangeSegment: string }>,
+  disconnects?: MarketDepthDisconnectEvent[],
 ): MarketDepth200Event[] {
   const results: MarketDepth200Event[] = [];
   let offset = 0;
@@ -128,6 +128,12 @@ export function parseMarketDepth200Packet(
 
     if (msgLen < 12 || offset + msgLen > buf.length) {
       break;
+    }
+
+    if (responseCode === 50) {
+      disconnects?.push(parseDepthDisconnect(buf, offset, segCode, secId));
+      offset += msgLen;
+      continue;
     }
 
     if (responseCode !== 41 && responseCode !== 51) {
@@ -161,8 +167,7 @@ export function parseMarketDepth200Packet(
     const subMatch = subscriptions?.find((s) => s.securityId === secId);
     const exchangeSegment =
       subMatch?.exchangeSegment ??
-      SEGMENT_CODE_MAP[segCode] ??
-      `SEGMENT_${segCode}`;
+      exchangeSegmentForCode(segCode);
 
     const packetSlice = buf.subarray(offset, offset + msgLen);
 
@@ -188,9 +193,25 @@ export function parseMarketDepthPacket(
   buf: Buffer,
   mode: "twenty" | "twohundred",
   subscriptions?: Array<{ securityId: string; exchangeSegment: string }>,
+  disconnects?: MarketDepthDisconnectEvent[],
 ): MarketDepthEvent[] {
   if (mode === "twenty") {
-    return parseMarketDepth20Packet(buf, subscriptions);
+    return parseMarketDepth20Packet(buf, subscriptions, disconnects);
   }
-  return parseMarketDepth200Packet(buf, subscriptions);
+  return parseMarketDepth200Packet(buf, subscriptions, disconnects);
+}
+
+/** Server disconnect frame: 12-byte header (code 50) + int16 LE reason (805-809). */
+function parseDepthDisconnect(
+  buf: Buffer,
+  offset: number,
+  segCode: number,
+  securityId: string,
+): MarketDepthDisconnectEvent {
+  return {
+    type: "depth-disconnect",
+    securityId,
+    exchangeSegment: exchangeSegmentForCode(segCode),
+    reasonCode: offset + 14 <= buf.length ? buf.readInt16LE(offset + 12) : undefined,
+  };
 }

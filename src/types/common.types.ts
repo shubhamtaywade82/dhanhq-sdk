@@ -1,3 +1,4 @@
+import type { DhanMode } from "../client/Environment";
 import type { CircuitBreakerOptions } from "../client/CircuitBreaker";
 
 export interface DhanClientConfig {
@@ -5,7 +6,25 @@ export interface DhanClientConfig {
   clientId: string;
   tokenProvider?: () => Promise<string> | string;
   onTokenExpired?: (error: unknown) => Promise<void> | void;
+  /** Production REST host. Defaults to `https://api.dhan.co/v2`. */
   baseURL?: string;
+  /**
+   * Which host each request goes to: `live` (default), `sandbox`, or
+   * `hybrid` (market data from production, trading on the sandbox).
+   * See `DhanMode`. `DhanClient.fromEnv` reads `DHAN_MODE`.
+   */
+  mode?: DhanMode;
+  /** Sandbox REST host. Defaults to `https://sandbox.dhan.co/v2`. */
+  sandboxBaseURL?: string;
+  /**
+   * Credentials for the sandbox (generated on Dhan Cloud, cloud.dhanhq.co).
+   * Dhan rejects production tokens on the sandbox and vice versa, so
+   * sandbox-bound requests use these. Required in `hybrid` mode; in `sandbox`
+   * mode they fall back to `token`/`tokenProvider`/`clientId`.
+   */
+  sandboxToken?: string;
+  sandboxTokenProvider?: () => Promise<string> | string;
+  sandboxClientId?: string;
   timeoutMs?: number;
   rateLimitMinTimeMs?: number;
   /**

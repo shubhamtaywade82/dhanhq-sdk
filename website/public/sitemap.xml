@@ -12,6 +12,9 @@
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/edis</loc><priority>0.7</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/trader-controls</loc><priority>0.7</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/global-stocks</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/api/scanx</loc><priority>0.7</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/guide/environments</loc><priority>0.8</priority></url>
+  <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/guide/live-testing</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/websocket/market-feed</loc><priority>0.8</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/websocket/order-updates</loc><priority>0.7</priority></url>
   <url><loc>https://shubhamtaywade82.github.io/dhanhq-sdk/analytics/technical-analysis</loc><priority>0.8</priority></url>

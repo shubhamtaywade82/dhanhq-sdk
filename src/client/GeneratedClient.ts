@@ -1,5 +1,6 @@
 import { OpenAPI } from "../generated";
 import type { DhanClientConfig } from "../types/common.types";
+import { LIVE_BASE_URL, SANDBOX_BASE_URL } from "./Environment";
 
 /**
  * Raw access to the OpenAPI-codegen services (`client.generated.*`) for
@@ -22,8 +23,22 @@ import type { DhanClientConfig } from "../types/common.types";
  */
 export class GeneratedClient {
   constructor(config: DhanClientConfig) {
-    OpenAPI.BASE = config.baseURL ?? "https://api.dhan.co/v2";
     OpenAPI.TOKEN = undefined;
+
+    // The generated services cannot route per call. Outside `live` mode they
+    // point at the sandbox with sandbox credentials, so a raw generated call
+    // can never place a real order from a `sandbox` or `hybrid` client — at
+    // worst a market-data call fails on the sandbox. Use the wrapped resources
+    // for hybrid routing.
+    if ((config.mode ?? "live") !== "live") {
+      const token =
+        config.sandboxToken ?? (config.mode === "sandbox" ? config.token : undefined);
+      OpenAPI.BASE = config.sandboxBaseURL ?? SANDBOX_BASE_URL;
+      OpenAPI.HEADERS = token ? { "access-token": token } : undefined;
+      return;
+    }
+
+    OpenAPI.BASE = config.baseURL ?? LIVE_BASE_URL;
     OpenAPI.HEADERS = config.token
       ? {
           "access-token": config.token,

@@ -10,13 +10,18 @@ import {
   productSupportCheck,
   quantityCheck,
   tradingPermissionCheck,
+  instrumentKind,
+  isRiskReducing,
 } from "./checks";
 import {
   DEFAULT_RISK_LIMITS,
   type RiskCheck,
+  type RiskContext,
   type RiskDataProvider,
+  type RiskFunds,
   type RiskLimits,
   type RiskOrderArgs,
+  type RiskPosition,
 } from "./types";
 
 export type RiskInstrumentKind = "equity" | "options";
@@ -81,15 +86,23 @@ export class Pipeline {
     this.checks = config.checks ?? BASE_CHECKS;
   }
 
-  /** Runs every applicable check. Throws on the first violation. */
-  public async run(options: PipelineRunOptions): Promise<true> {
-    const context = {
+  private async buildContext(options: PipelineRunOptions): Promise<RiskContext> {
+    const provider = memoizeProvider(this.provider);
+    const reducing = provider ? isRiskReducing(options.args, await provider.positions()) : false;
+
+    return {
       args: options.args,
       instrument: options.instrument,
       now: options.now ?? new Date(),
       limits: this.limits,
-      provider: this.provider,
+      provider,
+      reducing,
     };
+  }
+
+  /** Runs every applicable check. Throws on the first violation. */
+  public async run(options: PipelineRunOptions): Promise<true> {
+    const context = await this.buildContext(options);
 
     const applicable = [
       ...this.checks,
@@ -110,13 +123,7 @@ export class Pipeline {
    * than the first problem.
    */
   public async report(options: PipelineRunOptions): Promise<RiskReport> {
-    const context = {
-      args: options.args,
-      instrument: options.instrument,
-      now: options.now ?? new Date(),
-      limits: this.limits,
-      provider: this.provider,
-    };
+    const context = await this.buildContext(options);
 
     const applicable = [
       ...this.checks,
@@ -150,5 +157,22 @@ export class Pipeline {
  * `instrumentType` starts with `OPT` gets the options rules on top.
  */
 export function riskTypeFor(instrument?: Instrument): RiskInstrumentKind {
-  return instrument?.instrumentType?.startsWith("OPT") ? "options" : "equity";
+  return instrumentKind(instrument).startsWith("OPT") ? "options" : "equity";
+}
+
+/**
+ * Wraps a provider so one run fetches positions and funds at most once,
+ * however many checks ask for them.
+ */
+function memoizeProvider(provider?: RiskDataProvider): RiskDataProvider | undefined {
+  if (!provider) {
+    return undefined;
+  }
+
+  let positions: Promise<RiskPosition[]> | undefined;
+  let funds: Promise<RiskFunds> | undefined;
+  return {
+    positions: () => (positions ??= provider.positions()),
+    funds: () => (funds ??= provider.funds()),
+  };
 }

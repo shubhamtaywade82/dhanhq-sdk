@@ -4,6 +4,8 @@ import type { PlaceOrderRequest } from "../types/order.types";
 /** Position fields the risk checks need, from `GET /v2/positions`. */
 export interface RiskPosition {
   netQty?: number;
+  exchangeSegment?: string;
+  productType?: string;
   costPrice?: number;
   unrealizedProfit?: number;
   realizedProfit?: number;
@@ -43,7 +45,7 @@ export interface RiskLimits {
   maxQuantity: number;
   /** Largest notional (quantity × price) a single order may carry. */
   maxNotional: number;
-  /** Aggregate unrealized loss at which new orders stop, as a positive number. */
+  /** Day loss (realized + unrealized) at which new orders stop, as a positive number. */
   dailyMaxLoss: number;
   /** Concurrent open positions allowed. */
   maxOpenPositions: number;
@@ -74,6 +76,12 @@ export interface RiskContext {
   now?: Date;
   limits: RiskLimits;
   provider?: RiskDataProvider;
+  /**
+   * True when the order only reduces an open position (see `isRiskReducing`).
+   * Limit checks never block such an order: refusing a stop-out because the
+   * account is already over a limit turns a capped loss into an uncapped one.
+   */
+  reducing?: boolean;
 }
 
 /**

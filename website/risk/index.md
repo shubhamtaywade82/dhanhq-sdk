@@ -40,6 +40,24 @@ Checks cover:
 
 These checks are NSE/BSE-specific and do not apply to Global Stocks.
 
+### Exits are never blocked
+
+An order that **reduces** an open position — a SELL against a long, a BUY
+against a short, up to the open quantity in the same segment and product — is
+recognised as risk-reducing. The entry-only checks (quantity, position count,
+concentration, daily loss, ASM/GSM, options rules) are skipped for it, so a
+stop-loss or square-off still goes through when limits are already breached.
+Permission, order-type, product and market-hours checks still apply.
+
+### What the limits count
+
+- **Daily loss** uses realized + unrealized P&L, so booked losses count.
+- **Concentration** includes the new order's own notional (price, or trigger
+  price for stop orders).
+- **Options** are identified by the scrip master's `INSTRUMENT` column
+  (`OPTIDX` / `OPTSTK`); `INSTRUMENT_TYPE` is `OP` for both, so index-only
+  option rules key off `OPTIDX`.
+
 ## Position Monitor
 
 Real-time exit signals driven by WebSocket ticks:

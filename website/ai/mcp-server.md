@@ -18,6 +18,13 @@ export DHAN_ACCESS_TOKEN=your_access_token
 npx dhanhq-mcp
 ```
 
+The server builds its client with `DhanClient.fromEnv()`, so every variable
+from [Getting Started](/getting-started#_4-environment-variables) applies:
+`DHAN_PIN` + `DHAN_TOTP_SECRET` for automatic login with a cached token, and
+`DHAN_MODE=hybrid` with `DHAN_SANDBOX_CLIENT_ID` / `DHAN_SANDBOX_ACCESS_TOKEN`
+to let an agent trade against the sandbox while reading live prices. A tool
+the sandbox does not serve returns an in-band error explaining so.
+
 ## Claude Desktop Configuration
 
 Add to your `claude_desktop_config.json`:

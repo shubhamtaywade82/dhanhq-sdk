@@ -5,6 +5,7 @@ export * from "./auth";
 export * from "./backtest";
 export * from "./client/CircuitBreaker";
 export * from "./client/DhanClient";
+export * from "./client/Environment";
 export * from "./client/GeneratedClient";
 export * from "./client/HttpClient";
 export * from "./client/RateLimiter";

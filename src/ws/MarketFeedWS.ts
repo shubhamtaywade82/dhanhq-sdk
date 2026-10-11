@@ -20,6 +20,12 @@ const REQUEST_CODE_BY_MODE: Record<MarketFeedMode, number> = {
   full: 21,
 };
 
+const UNSUBSCRIBE_CODE_BY_MODE: Record<MarketFeedMode, number> = {
+  ticker: 16,
+  quote: 18,
+  full: 22,
+};
+
 export interface MarketFeedWSOptionsWithLogger extends MarketFeedWSOptions {
   logger?: Logger;
 }
@@ -66,10 +72,19 @@ export class MarketFeedWS extends BaseWS {
     }
   }
 
+  /**
+   * Stops the feed for these instruments: tells the server (RequestCode
+   * 16/18/22 for ticker/quote/full) and forgets them locally. Never sends 12 —
+   * that is the whole-connection Disconnect Feed frame.
+   */
   public unsubscribe(instruments: InstrumentSubscription[]): void {
     for (const instrument of instruments) {
       this.subscriptions.delete(this.subscriptionKey(instrument));
       this.ltpStore.delete(this.subscriptionKey(instrument));
+    }
+
+    if (this.isConnected && instruments.length > 0) {
+      this.sendInstruments(UNSUBSCRIBE_CODE_BY_MODE[this.mode], instruments);
     }
   }
 
@@ -122,13 +137,18 @@ export class MarketFeedWS extends BaseWS {
   }
 
   private sendSubscription(instruments: InstrumentSubscription[]): void {
+    this.sendInstruments(REQUEST_CODE_BY_MODE[this.mode], instruments);
+  }
+
+  /** Docs: at most 100 instruments per JSON message. */
+  private sendInstruments(requestCode: number, instruments: InstrumentSubscription[]): void {
     const batchSize = 100;
 
     for (let index = 0; index < instruments.length; index += batchSize) {
       const batch = instruments.slice(index, index + batchSize);
       this.send(
         JSON.stringify({
-          RequestCode: REQUEST_CODE_BY_MODE[this.mode],
+          RequestCode: requestCode,
           InstrumentCount: batch.length,
           InstrumentList: batch.map((instrument) => ({
             ExchangeSegment: instrument.exchangeSegment,

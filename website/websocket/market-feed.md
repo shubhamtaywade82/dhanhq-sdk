@@ -60,7 +60,17 @@ client.ws.depth?.subscribe([
 client.ws.depth?.on("depth", (event) => {
   console.log(event.levels); // top bid/ask levels
 });
+
+// The server drops an instrument (e.g. exchange-side issue) with a reason code
+client.ws.depth?.on("disconnect", (event) => {
+  console.warn("depth stopped", event.securityId, event.reasonCode);
+});
 ```
+
+Limits per connection: **50 instruments** for 20-level, **1** for 200-level.
+Subscribing beyond them throws a `DhanError` with code
+`DEPTH_SUBSCRIPTION_LIMIT` — the server would otherwise drop them silently.
+Open another `MarketDepthWS` for more.
 
 ## Unsubscribe
 
@@ -68,7 +78,30 @@ client.ws.depth?.on("depth", (event) => {
 client.ws.market.unsubscribe([
   { exchangeSegment: "NSE_EQ", securityId: "1333" },
 ]);
+client.ws.depth?.unsubscribe([
+  { exchangeSegment: "NSE_EQ", securityId: "1333" },
+]);
 ```
+
+Unsubscribe sends the request to Dhan (market feed codes 16/18/22 by mode,
+depth code 24), so the server stops streaming — not only the local
+subscription list.
+
+## Market Status
+
+Exchange status changes arrive as `market-status` events on the market feed:
+
+```ts
+client.ws.market.on("tick", (event) => {
+  if (event.type === "market-status") console.log("market status packet", event.raw);
+});
+```
+
+## Production Only
+
+The WebSockets have no sandbox. In `hybrid` mode they stream production
+data; sandbox orders do not appear on the order-update socket. See
+[Live, Sandbox & Hybrid](/guide/environments#websockets-have-no-sandbox).
 
 ## Subscription Modes
 

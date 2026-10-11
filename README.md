@@ -500,6 +500,81 @@ Only read-only requests are retried, once, on:
 
 ---
 
+## Sandbox, Hybrid and Live Modes
+
+Dhan runs two separate hosts with **separate credentials**: production
+(`api.dhan.co`) and the sandbox (`sandbox.dhan.co`, credentials from
+[cloud.dhanhq.co](https://cloud.dhanhq.co)). A production token is rejected by
+the sandbox and vice versa. `mode` decides where each request goes:
+
+| `mode` / `DHAN_MODE` | Market data, option chain, charts, ScanX, Global Stocks | Orders, positions, funds, statements, controls |
+| --- | --- | --- |
+| `live` (default) | production | production — **real money** |
+| `sandbox` | sandbox | sandbox |
+| `hybrid` | production (real prices) | sandbox (simulated fills) |
+
+The instrument CSV always comes from production (it needs no credentials).
+
+```ts
+const dhan = new DhanClient({
+  mode: "hybrid",
+  clientId: process.env.DHAN_CLIENT_ID!,             // production — market data
+  token: process.env.DHAN_ACCESS_TOKEN!,
+  sandboxClientId: process.env.DHAN_SANDBOX_CLIENT_ID!, // sandbox — execution
+  sandboxToken: process.env.DHAN_SANDBOX_ACCESS_TOKEN!,
+});
+// or: DhanClient.fromEnv() with DHAN_MODE=hybrid and the four variables above
+```
+
+Guarantees:
+
+- In `hybrid` mode a trading request **never** falls back to production: without
+  sandbox credentials it throws `AuthenticationError` before any I/O.
+- The sandbox serves only part of the API (orders, slicing, trades, holdings,
+  positions + convert, kill switch, eDIS, fund limit, single margin, ledger,
+  charts, forever orders, profile). Anything else — super orders, conditional
+  and multi orders, P&L exit, multi margin, IP setup, quotes and option chain
+  in full `sandbox` mode — throws `SandboxUnsupportedError` instead of a 404.
+- A sandbox `401` is never retried with a renewed production token.
+- The raw generated client (`dhan.generated`) points at the sandbox whenever
+  `mode` is not `live`.
+- WebSockets (market feed, depth, order updates) have no sandbox: they always
+  connect to production with the primary `clientId`/`token`. In `hybrid` mode,
+  order-update events for sandbox orders do not arrive — poll
+  `orders.getById()` instead.
+
+## Live Testing
+
+`scripts/live-check.ts` exercises the real hosts end to end: every read
+endpoint, the market-feed WebSocket, and optionally one tiny order.
+
+```bash
+npm run live-check                                    # read-only REST checks
+npm run live-check -- --ws                            # + market feed WebSocket
+DHAN_MODE=hybrid npm run live-check -- --ws --place-test-order   # sandbox order
+LIVE_TRADING=true npm run live-check -- --place-test-order       # REAL order
+```
+
+Credentials come from `DhanClient.fromEnv()`: `DHAN_PIN` + `DHAN_TOTP_SECRET`
+log in automatically and cache the token in `~/.dhanhq`, so repeated runs reuse
+it instead of logging in again (which could invalidate a running bot's token);
+otherwise `DHAN_ACCESS_TOKEN` is used as is.
+
+The test order is a **1-share CNC LIMIT BUY** of `TEST_SECURITY_ID` (default
+`1333`, HDFCBANK on `NSE_EQ`) priced `TEST_ORDER_OFFSET_PCT` (default 5, clamped
+to 2–15) below the LTP, so it rests unfilled; the script then cancels it and
+confirms the cancel. On the production host it refuses to run unless
+`LIVE_TRADING=true`. A failed placement is reconciled by correlation id, never
+retried. If the order fills anyway, the script says so — you then hold one
+share to sell yourself. `TEST_ORDER_PRICE` sets an explicit limit (needed in
+full `sandbox` mode, where there is no LTP). Each check prints `[OK]`, `[ERR]`
+or `[N/A]` (not served by the sandbox); the exit code is non-zero on any error.
+
+Guides on the docs site: [Live, Sandbox & Hybrid](https://shubhamtaywade82.github.io/dhanhq-sdk/guide/environments)
+and [Live Testing](https://shubhamtaywade82.github.io/dhanhq-sdk/guide/live-testing).
+Every endpoint with its sandbox support: [`docs/API_MAPPING.md`](docs/API_MAPPING.md)
+(generated — `npm run docs:mapping`).
+
 ## Environment Support
 
 | Feature | Node | Browser |
@@ -552,6 +627,29 @@ Fully wired, tested resources that don't come up in day-to-day usage enough
 to earn their own Quick Start step. Plain string literals work directly —
 `place()`/`form()`/etc. accept string-literal-typed request shapes derived
 from the generated OpenAPI enums, not the raw enums themselves.
+
+### ScanX Data
+
+```ts
+const movers = await dhan.scanx.marketMovers({
+  exchangeSegment: "NSE_FNO", instrument: ["OPTIDX"], category: "HIGHEST_OI",
+  expiry: "2026-10-27", limit: 20,
+});
+const news = await dhan.scanx.newsHeadline({ categories: ["ALL"], limit: 10 });
+// also companyInfo() and technical() — production only
+```
+
+### Multi Orders
+
+```ts
+await dhan.alerts.placeMulti({
+  orders: [{ sequence: "1", transactionType: "BUY", exchangeSegment: "NSE_FNO",
+             productType: "INTRADAY", orderType: "LIMIT", validity: "DAY",
+             securityId: "44000", quantity: 75, price: 120 }],
+});
+```
+
+A trading write: never retried, production only.
 
 ### Forever Orders (GTT)
 

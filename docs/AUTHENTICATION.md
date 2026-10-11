@@ -91,6 +91,39 @@ Renewal (`/RenewToken`) only works while the current token is still valid.
 Once it has expired, the manager falls back to a full PIN/TOTP login
 automatically.
 
+A 401 on any request makes the manager drop the rejected token and log in
+again (skipped when the broker issued the current token under a minute ago,
+`minReloginIntervalMs`), so a token revoked by a login elsewhere recovers on
+its own. Writes are still never resent — see the 401 policy above.
+
+The token reaches the WebSockets too: market feed, order updates and depth
+read it from the client on every connect and reconnect.
+
+#### Caching the token across restarts
+
+Without a store, every new process logs in again — and a fresh login can
+invalidate the token another process on the same account is using. Pass a
+store to reuse a valid token instead:
+
+```ts
+import { FileTokenStore } from "@nemesis-oss/dhanhq-sdk";
+
+client.auth.enableAutoTokenManagement({
+  clientId, pin, totpSecret,
+  store: new FileTokenStore(),          // ~/.dhanhq/dhan-token-<clientId>.json
+  onStoreError: (e) => log.warn({ e }, "token cache unavailable"),
+});
+```
+
+- A stored token that is still valid is used as is; one inside
+  `renewBeforeMs` of expiry is renewed; an expired one triggers a login.
+- Every login or renewal is written back. Files are mode 0600 in a 0700
+  directory (`DHAN_TOKEN_CACHE_DIR`, default `~/.dhanhq`), written atomically.
+- A missing, corrupt or unreadable cache costs one login, never a failed start.
+- Implement `TokenStore` (`load` / `save` / `clear`) to keep the token in
+  Redis, a secrets manager, etc. `MemoryTokenStore` shares one within a process.
+- PIN/TOTP login issues production tokens, so it is refused in `sandbox` mode.
+
 #### Supplying the TOTP yourself
 
 `totpSecret` means the process holds a credential equivalent to a second
@@ -108,14 +141,31 @@ client.auth.enableAutoTokenManagement({
 Either `totpSecret` or `totpProvider` is required; the constructor throws if
 neither is given, rather than failing later at the first login.
 
+### Sandbox credentials
+
+The Dhan sandbox (`sandbox.dhan.co`) has its own client id and token, issued
+on [cloud.dhanhq.co](https://cloud.dhanhq.co); production tokens are rejected
+there. Pass them as `sandboxClientId` / `sandboxToken` (or
+`sandboxTokenProvider`), or `DHAN_SANDBOX_CLIENT_ID` /
+`DHAN_SANDBOX_ACCESS_TOKEN`. They are used for every request `mode` routes to
+the sandbox; in `sandbox` mode without them the primary credentials are used
+(and must then be sandbox ones). A sandbox 401 never triggers
+`onTokenExpired`. See `website/guide/environments.md`.
+
 ### 4. From environment
 
 ```ts
 const client = DhanClient.fromEnv();
 ```
 
-Reads `DHAN_CLIENT_ID` and `DHAN_ACCESS_TOKEN`, plus optional
-`DHAN_BASE_URL`, `DHAN_PARTNER_ID` and `DHAN_PARTNER_SECRET`. Throws at
+Reads `DHAN_CLIENT_ID` and either `DHAN_ACCESS_TOKEN` or `DHAN_PIN` +
+`DHAN_TOTP_SECRET`, plus optional `DHAN_BASE_URL`, `DHAN_MODE`, the
+`DHAN_SANDBOX_*` variables, `DHAN_PARTNER_ID` and `DHAN_PARTNER_SECRET`.
+
+With `DHAN_PIN` + `DHAN_TOTP_SECRET`, `fromEnv` enables automatic token
+management with a `FileTokenStore` (`DHAN_TOKEN_CACHE_DIR`, or
+`DHAN_TOKEN_CACHE=off` to disable caching). They take precedence over
+`DHAN_ACCESS_TOKEN`, and are ignored in `sandbox` mode. Throws at
 construction when a required variable is missing — a missing credential is a
 startup problem, not something to discover on the first order.
 

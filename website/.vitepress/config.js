@@ -65,6 +65,8 @@ export default defineConfig({
           { text: "Installation", link: "/getting-started" },
           { text: "Quick Start", link: "/getting-started#quick-start" },
           { text: "Authentication", link: "/getting-started#authentication" },
+          { text: "Live, Sandbox & Hybrid", link: "/guide/environments" },
+          { text: "Live Testing", link: "/guide/live-testing" },
         ],
       },
       {
@@ -80,6 +82,7 @@ export default defineConfig({
           { text: "eDIS", link: "/api/edis" },
           { text: "Trader's Control", link: "/api/trader-controls" },
           { text: "Global Stocks", link: "/api/global-stocks" },
+          { text: "ScanX Data", link: "/api/scanx" },
         ],
       },
       {
