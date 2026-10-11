@@ -1,3 +1,4 @@
+import { exchangeSegmentForCode } from "../../constants";
 import type {
   MarketDepthLevel,
   MarketDisconnectEvent,
@@ -32,6 +33,8 @@ export function parseMarketFeedPacket(
       return parsePrevClose(packet, header);
     case 8:
       return parseFull(packet, header);
+    case 7:
+      return { ...header, type: "market-status", raw: packet };
     case 50:
       return parseDisconnect(packet, header);
     default:
@@ -215,5 +218,5 @@ function resolveExchangeSegment(
     return matches[0].exchangeSegment;
   }
 
-  return `SEGMENT_${exchangeSegmentCode}`;
+  return exchangeSegmentForCode(exchangeSegmentCode);
 }

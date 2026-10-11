@@ -141,6 +141,8 @@ export const OrderStatus = {
   TRADED: "TRADED",
   EXPIRED: "EXPIRED",
   MODIFIED: "MODIFIED",
+  /** In the documented `orderStatus` response enum of order, slice and super-order APIs. */
+  INACTIVE: "INACTIVE",
 } as const;
 
 export const AmoTime = {
@@ -228,6 +230,32 @@ export const FeedRequest = {
 } as const;
 
 /** Response codes on the Live Market Feed WebSocket. */
+/**
+ * Exchange segment numeric codes used in WebSocket packet headers (Annexure,
+ * "Exchange Segment" enum column). 6 is unassigned.
+ */
+export const EXCHANGE_SEGMENT_BY_CODE: Readonly<Record<number, string>> = {
+  0: ExchangeSegment.IDX_I,
+  1: ExchangeSegment.NSE_EQ,
+  2: ExchangeSegment.NSE_FNO,
+  3: ExchangeSegment.NSE_CURRENCY,
+  4: ExchangeSegment.BSE_EQ,
+  5: ExchangeSegment.MCX_COMM,
+  7: ExchangeSegment.BSE_CURRENCY,
+  8: ExchangeSegment.BSE_FNO,
+};
+
+/** Segment name for a packet-header code, or `SEGMENT_<code>` when unknown. */
+export function exchangeSegmentForCode(code: number): string {
+  return EXCHANGE_SEGMENT_BY_CODE[code] ?? `SEGMENT_${code}`;
+}
+
+/** Full Market Depth per-connection instrument caps (docs: 50 for 20-level, 1 for 200-level). */
+export const MARKET_DEPTH_LIMITS = {
+  twenty: 50,
+  twohundred: 1,
+} as const;
+
 export const FeedResponse = {
   INDEX_PACKET: 1,
   TICKER_PACKET: 2,

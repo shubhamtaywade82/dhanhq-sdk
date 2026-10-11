@@ -6,6 +6,7 @@ import {
   type EnableAutoTokenManagementOptions,
 } from "../auth";
 import { AuthenticationError } from "../errors";
+import { parseMode } from "./Environment";
 import { GeneratedClient } from "./GeneratedClient";
 import { HttpClient, type HttpClientDependencies } from "./HttpClient";
 import type { DhanClientConfig } from "../types/common.types";
@@ -27,6 +28,7 @@ import {
   Orders,
   Positions,
   Profile,
+  ScanX,
   Statements,
   SuperOrders,
   TraderControls,
@@ -59,6 +61,8 @@ export class DhanClient {
   /** The US equities book — a separate namespace so USD and INR never mix. */
   public readonly globalStocks: GlobalStocks;
   public readonly marginCalculator: MarginCalculator;
+  /** ScanX market-analytics data APIs (company info, movers, news, technicals). */
+  public readonly scanx: ScanX;
   public readonly ws: DhanWS;
   public readonly auth: {
     generateAccessToken: typeof DhanAuth.generateAccessToken;
@@ -103,6 +107,7 @@ export class DhanClient {
     });
     this.globalStocks = new GlobalStocks(httpClient);
     this.marginCalculator = new MarginCalculator(httpClient);
+    this.scanx = new ScanX(httpClient);
     this.ws = new DhanWS({
       token: config.token,
       tokenProvider: config.tokenProvider,
@@ -139,7 +144,9 @@ export class DhanClient {
   /**
    * Builds a client from the standard environment variables:
    * `DHAN_CLIENT_ID`, `DHAN_ACCESS_TOKEN` and optionally `DHAN_BASE_URL`,
-   * `DHAN_PARTNER_ID` and `DHAN_PARTNER_SECRET`.
+   * `DHAN_MODE` (`live` | `sandbox` | `hybrid`), `DHAN_SANDBOX_CLIENT_ID`,
+   * `DHAN_SANDBOX_ACCESS_TOKEN`, `DHAN_SANDBOX_BASE_URL`, `DHAN_PARTNER_ID`
+   * and `DHAN_PARTNER_SECRET`.
    *
    * Throws rather than constructing a client that would fail on its first
    * request — a missing credential is a startup problem, not a runtime one.
@@ -166,6 +173,10 @@ export class DhanClient {
       clientId,
       token,
       baseURL: env.DHAN_BASE_URL,
+      mode: parseMode(env.DHAN_MODE),
+      sandboxBaseURL: env.DHAN_SANDBOX_BASE_URL,
+      sandboxToken: env.DHAN_SANDBOX_ACCESS_TOKEN,
+      sandboxClientId: env.DHAN_SANDBOX_CLIENT_ID,
       partnerId: env.DHAN_PARTNER_ID,
       partnerSecret: env.DHAN_PARTNER_SECRET,
       ...overrides,

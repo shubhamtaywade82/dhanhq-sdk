@@ -303,7 +303,11 @@ describe("risk pipeline", () => {
   });
 
   it("routes option instruments to the options check set", () => {
-    expect(riskTypeFor(tradableInstrument({ instrumentType: "OPTIDX" }))).toBe(
+    // Real scrip-master rows: INSTRUMENT carries the contract kind; INSTRUMENT_TYPE is "OP".
+    expect(riskTypeFor(tradableInstrument({ instrument: "OPTIDX", instrumentType: "OP" }))).toBe(
+      "options",
+    );
+    expect(riskTypeFor(tradableInstrument({ instrument: "OPTSTK", instrumentType: "OP" }))).toBe(
       "options",
     );
     expect(riskTypeFor(tradableInstrument())).toBe("equity");
@@ -428,5 +432,101 @@ describe("trailing stop", () => {
 
     expect(trail.profit(110)).toBe(10);
     expect(trail.profitPercent(110)).toBe(10);
+  });
+
+  describe("risk-reducing orders", () => {
+    const optionContract = tradableInstrument({
+      securityId: "52175",
+      exchangeSegment: "NSE_FNO",
+      instrument: "OPTIDX",
+      instrumentType: "OP",
+    });
+    const heldLong = {
+      securityId: "52175",
+      exchangeSegment: "NSE_FNO",
+      productType: "INTRADAY",
+      netQty: 75,
+      costPrice: 120,
+      unrealizedProfit: -60_000,
+      realizedProfit: 0,
+    };
+    const stopOut = {
+      transactionType: "SELL" as const,
+      exchangeSegment: "NSE_FNO" as const,
+      productType: "INTRADAY" as const,
+      orderType: "MARKET" as const,
+      securityId: "52175",
+      quantity: 75,
+    };
+
+    it("lets a stop-out through the loss, size, position-count and options entry rules", async () => {
+      const crowded = [heldLong, ...Array.from({ length: 25 }, (_, i) => ({ securityId: `x${i}`, netQty: 1 }))];
+      const pipeline = new Pipeline({ provider: provider(crowded) });
+
+      await expect(
+        pipeline.run({ args: stopOut, instrument: optionContract, type: "options", now: duringMarketHours }),
+      ).resolves.toBe(true);
+    });
+
+    it("still blocks a new entry on the same account", async () => {
+      const pipeline = new Pipeline({ provider: provider([heldLong]) });
+
+      await expect(
+        pipeline.run({
+          args: { ...stopOut, transactionType: "BUY" as const, securityId: "99999", quantity: 1 },
+          instrument: tradableInstrument(),
+          now: duringMarketHours,
+        }),
+      ).rejects.toThrow(/Daily loss limit/);
+    });
+
+    it("treats an order larger than the position as new exposure", async () => {
+      const pipeline = new Pipeline({ provider: provider([{ ...heldLong, unrealizedProfit: 0 }]) });
+
+      await expect(
+        pipeline.run({ args: { ...stopOut, quantity: 150 }, instrument: optionContract, now: duringMarketHours }),
+      ).rejects.toThrow(/exceeds limit/);
+    });
+
+    it("fetches positions once per run", async () => {
+      const positions = jest.fn(async () => [heldLong]);
+      const pipeline = new Pipeline({ provider: { positions, funds: async () => ({ availabelBalance: 1e7 }) } });
+
+      await pipeline.run({ args: stopOut, instrument: optionContract, now: duringMarketHours });
+
+      expect(positions).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("counts realized losses toward the daily limit", async () => {
+    const pipeline = new Pipeline({
+      provider: provider([{ securityId: "1", netQty: 0, realizedProfit: -40_000, unrealizedProfit: -20_000 }]),
+    });
+
+    await expect(
+      pipeline.run({ args: validOrder, instrument: tradableInstrument(), now: duringMarketHours }),
+    ).rejects.toThrow(/Daily loss limit/);
+  });
+
+  it("allows index options and refuses stock options when optionsIndexOnly is on", async () => {
+    const pipeline = new Pipeline({ provider: provider() });
+    const withStops = { ...validOrder, stopLoss: 90, target: 150 };
+
+    await expect(
+      pipeline.run({
+        args: withStops,
+        instrument: tradableInstrument({ instrument: "OPTIDX", instrumentType: "OP" }),
+        type: "options",
+        now: duringMarketHours,
+      }),
+    ).resolves.toBe(true);
+    await expect(
+      pipeline.run({
+        args: withStops,
+        instrument: tradableInstrument({ instrument: "OPTSTK", instrumentType: "OP" }),
+        type: "options",
+        now: duringMarketHours,
+      }),
+    ).rejects.toThrow(/index underlyings/);
   });
 });

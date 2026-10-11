@@ -14,6 +14,7 @@ export * from "./OptionChain";
 export * from "./Orders";
 export * from "./Positions";
 export * from "./Profile";
+export * from "./ScanX";
 export * from "./Statements";
 export * from "./SuperOrders";
 export * from "./TraderControls";

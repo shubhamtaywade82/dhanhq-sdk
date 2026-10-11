@@ -22,8 +22,9 @@ export const tradingPermissionCheck: RiskCheck = {
 /** Blocks ASM/GSM surveillance-restricted instruments. */
 export const asmGsmCheck: RiskCheck = {
   name: "asm_gsm",
-  run({ instrument }) {
-    if (instrument?.asmGsmFlag !== "Y") {
+  run({ instrument, reducing }) {
+    // A position held before the instrument entered surveillance must stay closable.
+    if (reducing || instrument?.asmGsmFlag !== "Y") {
       return;
     }
 
@@ -78,11 +79,16 @@ export const orderTypeCheck: RiskCheck = {
 /** Enforces per-order quantity and notional ceilings. */
 export const quantityCheck: RiskCheck = {
   name: "quantity",
-  run({ args, limits }) {
+  run({ args, limits, reducing }) {
     const quantity = Number(args.quantity ?? 0);
 
     if (!Number.isFinite(quantity) || quantity <= 0) {
       throw new RiskViolationError("quantity", "Quantity must be greater than 0");
+    }
+
+    // Size caps bound new exposure; an exit up to the open position is allowed.
+    if (reducing) {
+      return;
     }
 
     if (quantity > limits.maxQuantity) {
@@ -129,8 +135,8 @@ export const marketHoursCheck: RiskCheck = {
 /** Caps the number of concurrently open positions. */
 export const positionLimitsCheck: RiskCheck = {
   name: "position_limits",
-  async run({ provider, limits }) {
-    if (!provider) {
+  async run({ provider, limits, reducing }) {
+    if (!provider || reducing) {
       return;
     }
 
@@ -151,9 +157,9 @@ export const positionLimitsCheck: RiskCheck = {
 /** Caps how much of the available balance a single symbol may represent. */
 export const concentrationCheck: RiskCheck = {
   name: "concentration",
-  async run({ args, provider, limits }) {
+  async run({ args, provider, limits, reducing }) {
     const symbol = args.securityId;
-    if (!provider || !symbol) {
+    if (!provider || !symbol || reducing) {
       return;
     }
 
@@ -172,7 +178,11 @@ export const concentrationCheck: RiskCheck = {
         0,
       );
 
-    const concentration = (exposure / available) * 100;
+    // The order's own notional counts when it carries a price (LIMIT / SL, or
+    // the trigger of SL-M); a plain MARKET order adds what it cannot price.
+    const orderPrice = Number(args.price ?? 0) || Number(args.triggerPrice ?? 0);
+    const orderNotional = Number(args.quantity ?? 0) * orderPrice;
+    const concentration = ((exposure + orderNotional) / available) * 100;
     if (concentration > limits.maxConcentrationPct) {
       throw new RiskViolationError(
         "concentration",
@@ -182,24 +192,28 @@ export const concentrationCheck: RiskCheck = {
   },
 };
 
-/** Stops new orders once aggregate unrealized loss crosses the daily limit. */
+/**
+ * Stops new orders once the day's P&L — realized plus unrealized — crosses the
+ * daily limit. A loss booked earlier in the day counts just as an open one does.
+ */
 export const maxLossCheck: RiskCheck = {
   name: "max_loss",
-  async run({ provider, limits }) {
-    if (!provider) {
+  async run({ provider, limits, reducing }) {
+    if (!provider || reducing) {
       return;
     }
 
     const positions = await provider.positions();
-    const unrealized = positions.reduce(
-      (total, position) => total + Number(position.unrealizedProfit ?? 0),
+    const dayPnl = positions.reduce(
+      (total, position) =>
+        total + Number(position.realizedProfit ?? 0) + Number(position.unrealizedProfit ?? 0),
       0,
     );
 
-    if (unrealized < -limits.dailyMaxLoss) {
+    if (dayPnl < -limits.dailyMaxLoss) {
       throw new RiskViolationError(
         "max_loss",
-        `Daily loss limit of ${limits.dailyMaxLoss} exceeded (current: ${unrealized.toFixed(0)})`,
+        `Daily loss limit of ${limits.dailyMaxLoss} exceeded (current: ${dayPnl.toFixed(0)})`,
       );
     }
   },
@@ -211,8 +225,13 @@ export const maxLossCheck: RiskCheck = {
  */
 export const optionsCheck: RiskCheck = {
   name: "options",
-  run({ args, instrument, limits }) {
-    if (limits.optionsIndexOnly && instrument?.instrumentType !== "INDEX") {
+  run({ args, instrument, limits, reducing }) {
+    // Entry rules only: closing an option position needs no stop or target.
+    if (reducing) {
+      return;
+    }
+
+    if (limits.optionsIndexOnly && instrumentKind(instrument) !== "OPTIDX") {
       throw new RiskViolationError(
         "options",
         "Options are only allowed on index underlyings",
@@ -253,4 +272,48 @@ function matchesSymbol(position: RiskPosition, symbol: string): boolean {
  */
 export function availableBalance(funds: RiskFunds): number {
   return Number(funds.availabelBalance ?? funds.availableBalance ?? 0);
+}
+
+/**
+ * The contract kind from the scrip master's `INSTRUMENT` column (`OPTIDX`,
+ * `OPTSTK`, `FUTIDX`, `EQUITY`, ...). `INSTRUMENT_TYPE` is not usable for this:
+ * NSE index and stock options both carry `OP` there.
+ */
+export function instrumentKind(instrument?: { instrument?: string; instrumentType?: string }): string {
+  return String(instrument?.instrument ?? instrument?.instrumentType ?? "").toUpperCase();
+}
+
+/**
+ * True when the order only shrinks an open position: the opposite side of a
+ * non-zero position in the same security (and segment / product when both
+ * sides name one), for no more than that position's size.
+ */
+export function isRiskReducing(
+  args: { transactionType?: unknown; quantity?: unknown; securityId?: unknown; exchangeSegment?: unknown; productType?: unknown },
+  positions: RiskPosition[],
+): boolean {
+  const quantity = Number(args.quantity ?? 0);
+  const side = String(args.transactionType ?? "").toUpperCase();
+  const securityId = String(args.securityId ?? "");
+  if (!(quantity > 0) || (side !== "BUY" && side !== "SELL") || securityId === "") {
+    return false;
+  }
+
+  const sameOrUnspecified = (wanted: unknown, actual: unknown) =>
+    wanted === undefined || wanted === "" || actual === undefined || String(wanted) === String(actual);
+
+  const position = positions.find(
+    (candidate) =>
+      Number(candidate.netQty ?? 0) !== 0 &&
+      String(candidate.securityId ?? "") === securityId &&
+      sameOrUnspecified(args.exchangeSegment, candidate.exchangeSegment) &&
+      sameOrUnspecified(args.productType, candidate.productType),
+  );
+  if (!position) {
+    return false;
+  }
+
+  const net = Number(position.netQty);
+  const closes = side === "SELL" ? net > 0 : net < 0;
+  return closes && quantity <= Math.abs(net);
 }

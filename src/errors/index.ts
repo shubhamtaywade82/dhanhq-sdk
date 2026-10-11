@@ -6,4 +6,5 @@ export * from "./LiveTradingDisabledError";
 export * from "./NetworkError";
 export * from "./RateLimitError";
 export * from "./RiskViolationError";
+export * from "./SandboxUnsupportedError";
 export * from "./ValidationError";

@@ -6,6 +6,57 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-11
+
+### Added
+
+- **Sandbox and hybrid modes.** `mode: "live" | "sandbox" | "hybrid"`
+  (`DHAN_MODE`) with `sandboxToken`/`sandboxTokenProvider`, `sandboxClientId`
+  and `sandboxBaseURL` (`DHAN_SANDBOX_ACCESS_TOKEN`, `DHAN_SANDBOX_CLIENT_ID`,
+  `DHAN_SANDBOX_BASE_URL`). `hybrid` serves market data, option chain, charts,
+  ScanX and Global Stocks from production and sends orders, portfolio, funds,
+  statements and controls to `sandbox.dhan.co` with the sandbox credentials,
+  rewriting `dhanClientId` in request bodies. Trading never falls back to
+  production: missing sandbox credentials throw `AuthenticationError` before any
+  I/O, and a sandbox `401` is not retried with a renewed production token.
+- `SandboxUnsupportedError` (`SANDBOX_UNSUPPORTED`) for operations the sandbox
+  does not serve, from an allow-list built from the sandbox's own OpenAPI
+  document, so unknown paths fail closed instead of 404ing.
+- `client.scanx` — `companyInfo`, `marketMovers`, `newsHeadline`, `technical`
+  (`POST /v2/data/*`).
+- `alerts.placeMulti()` — `POST /v2/alerts/multi/orders`.
+- `OrderStatus.INACTIVE`, `exchangeSegmentForCode()`, `MARKET_DEPTH_LIMITS`.
+- Market feed packet code 7 is decoded as a `market-status` event instead of
+  being dropped; depth disconnect packets (code 50) emit a `disconnect` event
+  with the reason code.
+- `npm run live-check` (`scripts/live-check.ts`): end-to-end read checks, the
+  market-feed WebSocket, and an opt-in 1-share below-market LIMIT order that is
+  placed and cancelled. Production orders require `LIVE_TRADING=true`.
+
+### Fixed
+
+- `MarketFeedWS.unsubscribe()` now sends the unsubscribe request (codes
+  16/18/22) to the server; it previously only dropped local state, so the
+  server kept streaming.
+- `MarketDepthWS.unsubscribe()` sends request code 24; subscriptions above the
+  per-connection caps (50 for 20-level, 1 for 200-level) throw
+  `DEPTH_SUBSCRIPTION_LIMIT` instead of being silently dropped by the server.
+- Depth packets mapped exchange-segment codes 3–8 to the wrong segments; they
+  now follow the annexure (3 `NSE_CURRENCY`, 4 `BSE_EQ`, 5 `MCX_COMM`,
+  7 `BSE_CURRENCY`, 8 `BSE_FNO`).
+- **Risk pipeline:** orders that reduce an existing position (exits, stop-loss
+  sells) are no longer blocked by the quantity, position-limit, concentration,
+  max-loss, ASM/GSM and options checks. Max-loss counts realized plus
+  unrealized P&L. Concentration includes the new order's notional. Option
+  detection reads the scrip master's `INSTRUMENT` column (`OPTIDX`/`OPTSTK`),
+  since `INSTRUMENT_TYPE` is `OP` for both, so index-only options rules now
+  apply.
+
+### Notes
+
+- The two Dhan doc sites disagree on expiry codes for expired-options data
+  (0/1/2 vs 1/2/3) and on daily rate limits; the SDK keeps its existing values.
+
 ## [1.2.0] - 2026-10-07
 
 ### Changed

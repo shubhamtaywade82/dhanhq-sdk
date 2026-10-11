@@ -14,6 +14,7 @@ import {
   AuthenticationError,
   NetworkError,
   RateLimitError,
+  SandboxUnsupportedError,
 } from "../errors";
 import { parseDhanErrorBody } from "../errors/ApiResponseError";
 import type { DhanClientConfig } from "../types/common.types";
@@ -23,6 +24,13 @@ import {
   type CircuitBreakerOptions,
   type CircuitState,
 } from "./CircuitBreaker";
+import {
+  type DhanEnvironment,
+  type DhanMode,
+  SANDBOX_BASE_URL,
+  environmentFor,
+  sandboxSupports,
+} from "./Environment";
 import { RateLimiter } from "./RateLimiter";
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -61,6 +69,11 @@ export class HttpClient {
   private readonly rateLimiter: RateLimiter;
   private readonly authResolver: AuthResolver;
   private readonly clientId: string;
+  private readonly mode: DhanMode;
+  private readonly sandboxBaseURL: string;
+  /** Set when dedicated sandbox credentials are configured. */
+  private readonly sandboxAuthResolver?: AuthResolver;
+  private readonly sandboxClientId?: string;
   private readonly logger?: Logger;
   private readonly circuitBreaker?: CircuitBreaker;
 
@@ -70,6 +83,16 @@ export class HttpClient {
   ) {
     this.authResolver = new AuthResolver(config);
     this.clientId = config.clientId;
+    this.mode = config.mode ?? "live";
+    this.sandboxBaseURL = config.sandboxBaseURL ?? SANDBOX_BASE_URL;
+    this.sandboxClientId = config.sandboxClientId;
+    if (config.sandboxToken || config.sandboxTokenProvider) {
+      this.sandboxAuthResolver = new AuthResolver({
+        clientId: config.sandboxClientId ?? config.clientId,
+        token: config.sandboxToken,
+        tokenProvider: config.sandboxTokenProvider,
+      });
+    }
     this.logger = dependencies.logger;
     this.rateLimiter =
       dependencies.rateLimiter ??
@@ -89,6 +112,12 @@ export class HttpClient {
   public async request<TResponse, TBody = unknown>(
     options: RequestOptions<TBody>,
   ): Promise<TResponse> {
+    // Refused before queueing or the circuit breaker: an unsupported sandbox
+    // call is a caller error, never sent anywhere — and never to production.
+    if (this.environmentFor(options.url) === "sandbox" && !sandboxSupports(options.method, options.url)) {
+      throw new SandboxUnsupportedError(options.method, options.url);
+    }
+
     const run = async (): Promise<TResponse> => {
       const execute = () => this.execute<TResponse, TBody>(options);
       const isWrite = options.method !== "GET";
@@ -144,6 +173,16 @@ export class HttpClient {
     return this.clientId;
   }
 
+  /** The configured mode: `live`, `sandbox` or `hybrid`. */
+  public getMode(): DhanMode {
+    return this.mode;
+  }
+
+  /** The host a request to `url` goes to under the configured mode. */
+  public environmentFor(url: string): DhanEnvironment {
+    return environmentFor(this.mode, url);
+  }
+
   public async getAccessToken(): Promise<string> {
     return this.authResolver.resolveAccessToken();
   }
@@ -160,6 +199,15 @@ export class HttpClient {
       const normalized = this.normalizeError(error);
 
       if (this.isAuthenticationFailure(normalized)) {
+        if (this.usesDedicatedSandboxCredentials(options.url)) {
+          // The production renewal hook cannot fix a sandbox token.
+          throw new AuthenticationError(
+            `${options.method} ${options.url}`,
+            "rejected with 401 by the Dhan sandbox — check sandboxToken / DHAN_SANDBOX_ACCESS_TOKEN " +
+              "(sandbox and production tokens are not interchangeable)",
+            { status: 401, details: normalized.details, cause: normalized },
+          );
+        }
         if (options.safeToRetry !== true) {
           throw await this.rejectUnreplayableAfterAuthFailure(options, normalized);
         }
@@ -236,6 +284,23 @@ export class HttpClient {
   private async toAxiosConfig<TBody>(
     options: RequestOptions<TBody>,
   ): Promise<AxiosRequestConfig<TBody>> {
+    if (this.environmentFor(options.url) === "sandbox") {
+      const { token, clientId } = await this.sandboxCredentials();
+
+      return {
+        baseURL: this.sandboxBaseURL,
+        method: options.method,
+        url: options.url,
+        data: rebindClientId(options.data, this.clientId, clientId),
+        params: options.params,
+        headers: {
+          "access-token": token,
+          "client-id": clientId,
+          ...options.headers,
+        },
+      };
+    }
+
     const token = await this.authResolver.resolveAccessToken();
 
     return {
@@ -249,6 +314,39 @@ export class HttpClient {
         ...options.headers,
       },
     };
+  }
+
+  private usesDedicatedSandboxCredentials(url: string): boolean {
+    return this.environmentFor(url) === "sandbox" && this.sandboxAuthResolver !== undefined;
+  }
+
+  /**
+   * Sandbox credentials. Dedicated ones (`sandboxToken`/`sandboxClientId`) win;
+   * in full `sandbox` mode the primary pair is used when they are absent, as it
+   * always has been. In `hybrid` they are required: Dhan rejects a production
+   * token on the sandbox, so sending one would only fail.
+   */
+  private async sandboxCredentials(): Promise<{ token: string; clientId: string }> {
+    if (this.sandboxAuthResolver) {
+      return {
+        token: await this.sandboxAuthResolver.resolveAccessToken(),
+        clientId: this.sandboxClientId ?? this.clientId,
+      };
+    }
+
+    if (this.mode === "sandbox") {
+      return {
+        token: await this.authResolver.resolveAccessToken(),
+        clientId: this.sandboxClientId ?? this.clientId,
+      };
+    }
+
+    throw new AuthenticationError(
+      "SandboxCredentials",
+      `${this.mode} mode routes trading requests to the Dhan sandbox, which rejects production ` +
+        "credentials — set sandboxToken and sandboxClientId (DHAN_SANDBOX_ACCESS_TOKEN / " +
+        "DHAN_SANDBOX_CLIENT_ID, generated on https://cloud.dhanhq.co)",
+    );
   }
 
   private shouldRetry(error: unknown): boolean {
@@ -366,4 +464,22 @@ function isAxiosLikeError(error: unknown): error is AxiosError {
     error !== null &&
     "isAxiosError" in error
   );
+}
+
+/**
+ * Resources fill `dhanClientId` from the production client id. A sandbox
+ * request authenticates with the sandbox client id, so the body must name the
+ * same account: a production id is swapped for it; any other value is kept.
+ */
+function rebindClientId<TBody>(data: TBody, productionId: string, sandboxId: string): TBody {
+  if (productionId === sandboxId || data === null || typeof data !== "object" || Array.isArray(data)) {
+    return data;
+  }
+
+  const body = data as Record<string, unknown>;
+  if (body.dhanClientId !== productionId) {
+    return data;
+  }
+
+  return { ...body, dhanClientId: sandboxId } as TBody;
 }
