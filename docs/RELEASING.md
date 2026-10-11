@@ -37,6 +37,21 @@ has to exist.
    `.github/workflows/publish.yml`, which runs `prepublishOnly`
    (clean → typecheck → test → build) before pushing to npm.
 
+### When the version was bumped in a pull request
+
+If `package.json`, `package-lock.json` and the `CHANGELOG.md` heading were
+already moved to the new version in a PR, do **not** run `npm version` (it would
+bump again). Tag the PR's merge commit on `main` — a lightweight `vX.Y.Z` tag,
+as for `v1.0.0`–`v1.2.0` — and publish the release from it:
+
+```bash
+git fetch origin
+git tag v1.3.0 <merge-commit-sha>
+git push origin v1.3.0
+```
+
+Pushing a tag publishes nothing; the GitHub Release does.
+
 `workflow_dispatch` on the same workflow can publish manually, including under
 a non-`latest` dist-tag for prereleases.
 
