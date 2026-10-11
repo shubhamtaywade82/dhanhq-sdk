@@ -141,6 +141,17 @@ client.auth.enableAutoTokenManagement({
 Either `totpSecret` or `totpProvider` is required; the constructor throws if
 neither is given, rather than failing later at the first login.
 
+### Sandbox credentials
+
+The Dhan sandbox (`sandbox.dhan.co`) has its own client id and token, issued
+on [cloud.dhanhq.co](https://cloud.dhanhq.co); production tokens are rejected
+there. Pass them as `sandboxClientId` / `sandboxToken` (or
+`sandboxTokenProvider`), or `DHAN_SANDBOX_CLIENT_ID` /
+`DHAN_SANDBOX_ACCESS_TOKEN`. They are used for every request `mode` routes to
+the sandbox; in `sandbox` mode without them the primary credentials are used
+(and must then be sandbox ones). A sandbox 401 never triggers
+`onTokenExpired`. See `website/guide/environments.md`.
+
 ### 4. From environment
 
 ```ts

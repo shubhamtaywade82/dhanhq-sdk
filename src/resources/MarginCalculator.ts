@@ -51,13 +51,13 @@ export class MarginCalculator {
    */
   public async calculateSingle(
     request: MarginScriptItem,
-  ): Promise<MultiScripMarginCalcResponse> {
-    return this.httpClient.request<MultiScripMarginCalcResponse, { scripList: MarginScriptItem[] }>({
+  ): Promise<MarginCalculationResponse> {
+    // `/margincalculator` takes one order as a flat object; `scripList` is
+    // only understood by `/margincalculator/multi`.
+    return this.httpClient.request<MarginCalculationResponse, MarginScriptItem>({
       method: "POST",
       url: "/margincalculator",
-      data: {
-        scripList: [request],
-      },
+      data: request,
       safeToRetry: true,
     });
   }
@@ -100,7 +100,7 @@ export class MarginCalculator {
   ): Promise<MultiScripMarginCalcResponse> {
     return this.httpClient.request<MultiScripMarginCalcResponse, { scripList: MarginScriptItem[] }>({
       method: "POST",
-      url: "/margincalculator",
+      url: "/margincalculator/multi",
       data: {
         scripList: legs,
       },
@@ -129,7 +129,7 @@ export class MarginCalculator {
     longPrice: number;
     shortPrice: number;
     productType?: `${ScriptItem.productType}`;
-  }): Promise<MarginCalculationResponse> {
+  }): Promise<MultiScripMarginCalcResponse> {
     const {
       longStrikeSecurityId,
       shortStrikeSecurityId,
@@ -180,7 +180,7 @@ export class MarginCalculator {
     longPrice: number;
     shortPrice: number;
     productType?: `${ScriptItem.productType}`;
-  }): Promise<MarginCalculationResponse> {
+  }): Promise<MultiScripMarginCalcResponse> {
     const {
       longStrikeSecurityId,
       shortStrikeSecurityId,
@@ -243,7 +243,7 @@ export class MarginCalculator {
       longCall: number;
     };
     productType?: `${ScriptItem.productType}`;
-  }): Promise<MarginCalculationResponse> {
+  }): Promise<MultiScripMarginCalcResponse> {
     const {
       longPutSecurityId,
       shortPutSecurityId,

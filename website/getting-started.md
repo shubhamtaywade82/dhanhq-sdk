@@ -50,22 +50,42 @@ new DhanClient({
 
 ### 3. Auto-Renewal (PIN + TOTP)
 
-Generate from PIN + TOTP secret, renew before expiry:
+Generate from PIN + TOTP secret, renew before expiry, log in again after a
+401, and cache the token so a restart reuses it:
 
 ```ts
+import { DhanClient, FileTokenStore } from "@nemesis-oss/dhanhq-sdk";
+
+const client = new DhanClient({ clientId: process.env.DHAN_CLIENT_ID! });
 client.auth.enableAutoTokenManagement({
-  clientId: "YOUR_CLIENT_ID",
-  pin: "YOUR_PIN",
-  totpSecret: "YOUR_TOTP_SECRET",
+  clientId: process.env.DHAN_CLIENT_ID!,
+  pin: process.env.DHAN_PIN!,
+  totpSecret: process.env.DHAN_TOTP_SECRET!,
+  store: new FileTokenStore(), // ~/.dhanhq/dhan-token-<clientId>.json, mode 0600
 });
 ```
+
+Without a store every process logs in again — and a fresh login can
+invalidate the token another process on the same account holds. REST calls
+and all WebSockets use the managed token.
 
 ### 4. Environment Variables
 
 ```ts
 const client = DhanClient.fromEnv();
-// reads DHAN_CLIENT_ID and DHAN_ACCESS_TOKEN
 ```
+
+| Variable | Purpose |
+|----------|---------|
+| `DHAN_CLIENT_ID` | required |
+| `DHAN_PIN` + `DHAN_TOTP_SECRET` | PIN/TOTP login with the file token cache (wins over a static token) |
+| `DHAN_ACCESS_TOKEN` | static token |
+| `DHAN_TOKEN_CACHE_DIR` / `DHAN_TOKEN_CACHE=off` | cache location (default `~/.dhanhq`) / disable |
+| `DHAN_MODE` | `live` (default), `sandbox` or `hybrid` — see [Live, Sandbox & Hybrid](/guide/environments) |
+| `DHAN_SANDBOX_CLIENT_ID` / `DHAN_SANDBOX_ACCESS_TOKEN` | sandbox credentials (required for `hybrid`) |
+
+`fromEnv` throws at startup when a required variable is missing. A
+`.env.example` in the repository lists every variable.
 
 ### 5. Custom Token Endpoint
 
@@ -75,5 +95,7 @@ const client = await DhanClient.fromTokenEndpoint({
   bearerToken: process.env.DHAN_TOKEN_ACCESS_TOKEN!,
 });
 ```
+
+Before trading real money, run the [live test](/guide/live-testing).
 
 See the full [authentication guide](https://github.com/shubhamtaywade82/dhanhq-sdk/blob/main/docs/AUTHENTICATION.md) for details on TOTP generation, SELF vs PARTNER auth, and token lifecycle.

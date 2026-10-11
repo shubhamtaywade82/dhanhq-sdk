@@ -333,9 +333,12 @@ describe("Funds & MarginCalculator — plain string-literal request shape", () =
       productType: "INTRADAY",
     });
 
-    expect(stub.requests[0].data).toMatchObject({
-      scripList: [{ exchangeSegment: "NSE_FNO", transactionType: "BUY" }],
-    });
+    // Single goes to /margincalculator as a flat order; the multi-leg helpers
+    // need /margincalculator/multi, the only endpoint that reads scripList.
+    expect(stub.requests[0].url).toBe("/margincalculator");
+    expect(stub.requests[0].data).toMatchObject({ exchangeSegment: "NSE_FNO", transactionType: "BUY" });
+    expect(stub.requests[0].data).not.toHaveProperty("scripList");
+    expect(stub.requests[1].url).toBe("/margincalculator/multi");
     expect(stub.requests[1].data).toMatchObject({
       scripList: [
         { exchangeSegment: "NSE_FNO", transactionType: "BUY" },

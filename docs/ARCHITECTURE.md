@@ -26,6 +26,14 @@ pipeline, indicators and skills are all usable directly from application code.
   hand — regenerate with `npm run generate`.
 - `src/client/HttpClient.ts` centralizes auth resolution, rate limiting, error
   normalization and safe-retry behavior. Order placement is never auto-retried.
+- `src/client/Environment.ts` decides the host per request from `mode`
+  (`live` / `sandbox` / `hybrid`): it classifies each path as public, market
+  data, Global Stocks or trading, and holds the allow-list of operations the
+  Dhan sandbox serves. `HttpClient` applies it before queueing — a sandbox
+  request for an unsupported path throws `SandboxUnsupportedError` without I/O,
+  and sandbox requests carry the sandbox credentials.
+- `src/auth` holds token generation, renewal and the optional `TokenStore`
+  that persists a PIN/TOTP token across restarts.
 
 ## Resource layer
 

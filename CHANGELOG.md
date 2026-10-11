@@ -38,12 +38,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   management with the file cache; `client.getTokenManager()`.
 - `TokenManager.handleUnauthorized()`: with token management enabled, a 401
   drops the rejected token and logs in again before a safe read is replayed.
+- Docs: `docs/API_MAPPING.md` is now generated from the resource classes
+  (`npm run docs:mapping`, checked by a spec) with hybrid/sandbox routing per
+  endpoint; docs-site guides for live/sandbox/hybrid mode, live testing and
+  ScanX; WebSocket protocol, risk, auth and MCP docs updated.
 - `npm run live-check` (`scripts/live-check.ts`): end-to-end read checks, the
   market-feed WebSocket, and an opt-in 1-share below-market LIMIT order that is
   placed and cancelled. Production orders require `LIVE_TRADING=true`.
 
 ### Fixed
 
+- **`marginCalculator`:** `calculateMulti()` (and the `bullCallSpread`,
+  `bullPutSpread`, `ironCondor` helpers) posted a `scripList` to the
+  single-order `/margincalculator` endpoint; it now calls
+  `/margincalculator/multi`. `calculateSingle()` sends the flat single-order
+  body and is typed `KnowYourMarginResponse`; the helpers are typed
+  `MultiScripMarginCalcResponse`.
 - WebSockets (market feed, order updates, depth) ignored tokens from
   `enableAutoTokenManagement` and any token change after construction; they
   now resolve the token from the client on every connect and reconnect.

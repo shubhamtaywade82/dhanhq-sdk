@@ -82,6 +82,12 @@ order would go out unchecked.
 
 ## MCP server
 
+`dhanhq-mcp` builds its client with `DhanClient.fromEnv()`, so it honours
+`DHAN_MODE` (run agents against the sandbox with `hybrid`), PIN/TOTP login with
+the token cache (`DHAN_PIN` + `DHAN_TOTP_SECRET`) and the sandbox credentials.
+A tool the sandbox does not serve fails in-band with the
+`SandboxUnsupportedError` message.
+
 `dhanhq-mcp` speaks JSON-RPC 2.0 over stdio and supports protocol versions
 `2025-06-18` and `2024-11-05`.
 

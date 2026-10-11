@@ -570,6 +570,11 @@ share to sell yourself. `TEST_ORDER_PRICE` sets an explicit limit (needed in
 full `sandbox` mode, where there is no LTP). Each check prints `[OK]`, `[ERR]`
 or `[N/A]` (not served by the sandbox); the exit code is non-zero on any error.
 
+Guides on the docs site: [Live, Sandbox & Hybrid](https://shubhamtaywade82.github.io/dhanhq-sdk/guide/environments)
+and [Live Testing](https://shubhamtaywade82.github.io/dhanhq-sdk/guide/live-testing).
+Every endpoint with its sandbox support: [`docs/API_MAPPING.md`](docs/API_MAPPING.md)
+(generated — `npm run docs:mapping`).
+
 ## Environment Support
 
 | Feature | Node | Browser |
@@ -622,6 +627,29 @@ Fully wired, tested resources that don't come up in day-to-day usage enough
 to earn their own Quick Start step. Plain string literals work directly —
 `place()`/`form()`/etc. accept string-literal-typed request shapes derived
 from the generated OpenAPI enums, not the raw enums themselves.
+
+### ScanX Data
+
+```ts
+const movers = await dhan.scanx.marketMovers({
+  exchangeSegment: "NSE_FNO", instrument: ["OPTIDX"], category: "HIGHEST_OI",
+  expiry: "2026-10-27", limit: 20,
+});
+const news = await dhan.scanx.newsHeadline({ categories: ["ALL"], limit: 10 });
+// also companyInfo() and technical() — production only
+```
+
+### Multi Orders
+
+```ts
+await dhan.alerts.placeMulti({
+  orders: [{ sequence: "1", transactionType: "BUY", exchangeSegment: "NSE_FNO",
+             productType: "INTRADAY", orderType: "LIMIT", validity: "DAY",
+             securityId: "44000", quantity: 75, price: 120 }],
+});
+```
+
+A trading write: never retried, production only.
 
 ### Forever Orders (GTT)
 
