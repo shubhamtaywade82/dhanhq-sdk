@@ -48,6 +48,11 @@ export class DhanWS {
       },
       this.orderStore,
     );
+
+    if (options.blockedBy) {
+      this.market.block(options.blockedBy);
+      this.orders.block(options.blockedBy);
+    }
   }
 
   /**
@@ -65,6 +70,9 @@ export class DhanWS {
       webSocketFactory: this.options.depthSocketFactory,
       mode,
     });
+    if (this.options.blockedBy) {
+      this.depth.block(this.options.blockedBy);
+    }
     return this.depth;
   }
 

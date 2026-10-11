@@ -185,3 +185,26 @@ describe("DhanClient", () => {
     expect(OpenAPI.BASE).toBe("https://api.dhan.co/v2");
   });
 });
+
+describe("WebSockets per mode", () => {
+  const blockedBy = (socket: object) => (socket as { blockedBy?: Error }).blockedBy;
+
+  it("refuses every socket in sandbox mode, before any connection attempt", async () => {
+    const client = new DhanClient({ clientId: "1", token: "sandbox-token", mode: "sandbox" });
+    const depth = client.ws.enableDepth("twenty");
+
+    for (const socket of [client.ws.market, client.ws.orders, depth]) {
+      await expect(socket.connect()).rejects.toBeInstanceOf(SandboxUnsupportedError);
+    }
+    await expect(client.ws.connect()).rejects.toThrow(/Use mode "hybrid"/);
+    expect(client.ws.market.isConnected).toBe(false);
+  });
+
+  it.each(["hybrid", "live"] as const)("leaves sockets usable in %s mode", (mode) => {
+    const client = new DhanClient({ clientId: "1", token: "live-token", ...hybrid, mode });
+
+    expect(blockedBy(client.ws.market)).toBeUndefined();
+    expect(blockedBy(client.ws.orders)).toBeUndefined();
+    expect(blockedBy(client.ws.enableDepth())).toBeUndefined();
+  });
+});

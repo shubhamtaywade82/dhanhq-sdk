@@ -145,3 +145,16 @@ describe("segment codes in packet headers", () => {
     expect(parseMarketFeedPacket(packet, [])).toMatchObject({ type: "market-status" });
   });
 });
+
+describe("BaseWS.block", () => {
+  it("rejects connect without opening a socket or scheduling a reconnect", async () => {
+    const factory = jest.fn();
+    const ws = new MarketFeedWS({ token: "t", clientId: "c", webSocketFactory: factory }, new LTPStore());
+    const reason = new DhanError("no sockets here", { code: "TEST" });
+    ws.block(reason);
+
+    await expect(ws.connect()).rejects.toBe(reason);
+    expect(factory).not.toHaveBeenCalled();
+    expect((ws as unknown as { reconnectTimer?: unknown }).reconnectTimer).toBeUndefined();
+  });
+});

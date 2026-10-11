@@ -7,10 +7,11 @@ import { DhanError } from "./DhanError";
  * real one.
  */
 export class SandboxUnsupportedError extends DhanError {
-  constructor(method: string, url: string) {
+  constructor(method: string, url: string, message?: string) {
     super(
-      `${method} ${url} is not available on the Dhan sandbox (https://sandbox.dhan.co/v2). ` +
-        "It has no sandbox equivalent; use mode \"live\" for it, or keep it out of sandbox runs.",
+      message ??
+        `${method} ${url} is not available on the Dhan sandbox (https://sandbox.dhan.co/v2). ` +
+          "It has no sandbox equivalent; use mode \"live\" for it, or keep it out of sandbox runs.",
       { code: "SANDBOX_UNSUPPORTED" },
     );
     this.name = "SandboxUnsupportedError";

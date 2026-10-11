@@ -6,6 +6,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- In `sandbox` mode, `connect()` on the market feed, order update and depth
+  WebSockets rejects at once with `SandboxUnsupportedError`. Dhan's sandbox has
+  no WebSocket and production rejects sandbox credentials, so the sockets
+  previously failed and retried indefinitely. `hybrid` and `live` are unchanged.
+
+### Added
+
+- `BaseWS.block(error)`: makes `connect()` reject with `error` and never open
+  or retry a socket.
+
 ## [1.3.0] - 2026-10-11
 
 ### Added

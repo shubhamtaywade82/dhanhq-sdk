@@ -110,7 +110,9 @@ and always connect with the primary `clientId` / token:
   orders never arrive** on the order WebSocket; track them by polling
   `client.orders.getById()` (or `getByCorrelationId()`).
 - **Sandbox** — the primary credentials are the sandbox's, which production
-  rejects, so the WebSockets cannot connect. Use `hybrid` for streaming.
+  rejects, so `connect()` on any socket (`client.ws.market`, `client.ws.orders`,
+  depth) rejects at once with `SandboxUnsupportedError` instead of retrying
+  forever. Use `hybrid` for streaming.
 
 ## Choosing a mode
 

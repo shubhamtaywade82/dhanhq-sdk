@@ -8,7 +8,9 @@
 - `DhanWS` provides a unified entrypoint for managing all three sockets (`market`, `orders`, and optional `depth`).
 - All three are **production only** — Dhan has no sandbox WebSocket. In
   `hybrid` mode they stream production data with the primary credentials, and
-  sandbox orders never appear on the order-update socket.
+  sandbox orders never appear on the order-update socket. In `sandbox` mode
+  `DhanClient` blocks the sockets (`BaseWS.block`): `connect()` rejects with
+  `SandboxUnsupportedError` without opening a connection or retrying.
 
 ## Market feed rules (`MarketFeedWS`)
 
