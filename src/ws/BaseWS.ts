@@ -34,7 +34,20 @@ export abstract class BaseWS extends EventEmitter {
     this.logger = logger;
   }
 
+  private blockedBy?: Error;
+
+  /**
+   * Makes every later {@link connect} reject with `error` instead of opening a
+   * socket — for configurations that can never connect (no point retrying).
+   */
+  public block(error: Error): void {
+    this.blockedBy = error;
+  }
+
   public async connect(): Promise<void> {
+    if (this.blockedBy) {
+      throw this.blockedBy;
+    }
     this.manuallyClosed = false;
     try {
       const url = await this.urlFactory();

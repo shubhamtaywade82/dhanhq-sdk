@@ -541,7 +541,9 @@ Guarantees:
 - WebSockets (market feed, depth, order updates) have no sandbox: they always
   connect to production with the primary `clientId`/`token`. In `hybrid` mode,
   order-update events for sandbox orders do not arrive — poll
-  `orders.getById()` instead.
+  `orders.getById()` instead. In full `sandbox` mode, `connect()` on any socket
+  rejects with `SandboxUnsupportedError` (the sandbox credentials would be
+  rejected by production); use `hybrid` to stream.
 
 ## Live Testing
 

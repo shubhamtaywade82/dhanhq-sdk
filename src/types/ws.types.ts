@@ -201,6 +201,8 @@ export interface DhanWSOptions {
   partnerId?: string;
   partnerSecret?: string;
   logger?: Logger;
+  /** When set, every socket's `connect()` rejects with this error. */
+  blockedBy?: Error;
 }
 
 export interface Logger {

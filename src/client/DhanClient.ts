@@ -7,7 +7,7 @@ import {
   TokenManager,
   type EnableAutoTokenManagementOptions,
 } from "../auth";
-import { AuthenticationError } from "../errors";
+import { AuthenticationError, SandboxUnsupportedError } from "../errors";
 import { parseMode } from "./Environment";
 import { GeneratedClient } from "./GeneratedClient";
 import { HttpClient, type HttpClientDependencies } from "./HttpClient";
@@ -126,6 +126,7 @@ export class DhanClient {
       partnerId: config.partnerId,
       partnerSecret: config.partnerSecret,
       logger: dependencies.logger,
+      blockedBy: config.mode === "sandbox" ? sandboxWebSocketError() : undefined,
     });
     this.auth = {
       generateAccessToken: DhanAuth.generateAccessToken,
@@ -271,6 +272,22 @@ export class DhanClient {
       baseURL: response.data.base_url,
     });
   }
+}
+
+/**
+ * Dhan's sandbox is REST-only — its API document lists no WebSocket — and the
+ * production sockets reject the sandbox credentials that `sandbox` mode uses,
+ * so connecting could only fail and retry forever.
+ */
+function sandboxWebSocketError(): SandboxUnsupportedError {
+  return new SandboxUnsupportedError(
+    "WebSocket",
+    "wss://*.dhan.co",
+    "WebSockets (market feed, order updates, market depth) are not available in sandbox mode: " +
+      "the Dhan sandbox has no WebSocket, and the production sockets reject sandbox credentials. " +
+      'Use mode "hybrid" to stream live data with production credentials while orders go to the ' +
+      "sandbox, and poll orders.getById() for sandbox order status.",
+  );
 }
 
 /** The trimmed value, or `undefined` when unset or blank. */
