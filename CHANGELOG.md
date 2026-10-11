@@ -29,12 +29,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Market feed packet code 7 is decoded as a `market-status` event instead of
   being dropped; depth disconnect packets (code 50) emit a `disconnect` event
   with the reason code.
+- **Token cache for PIN/TOTP login.** `TokenStore` with `FileTokenStore`
+  (`~/.dhanhq/dhan-token-<clientId>.json`, mode 0600, atomic writes) and
+  `MemoryTokenStore`; pass `store` to `enableAutoTokenManagement`. A valid
+  stored token is reused across restarts instead of logging in again.
+- `DhanClient.fromEnv()` accepts `DHAN_PIN` + `DHAN_TOTP_SECRET` (with
+  `DHAN_TOKEN_CACHE_DIR` / `DHAN_TOKEN_CACHE=off`) and enables token
+  management with the file cache; `client.getTokenManager()`.
+- `TokenManager.handleUnauthorized()`: with token management enabled, a 401
+  drops the rejected token and logs in again before a safe read is replayed.
 - `npm run live-check` (`scripts/live-check.ts`): end-to-end read checks, the
   market-feed WebSocket, and an opt-in 1-share below-market LIMIT order that is
   placed and cancelled. Production orders require `LIVE_TRADING=true`.
 
 ### Fixed
 
+- WebSockets (market feed, order updates, depth) ignored tokens from
+  `enableAutoTokenManagement` and any token change after construction; they
+  now resolve the token from the client on every connect and reconnect.
 - `MarketFeedWS.unsubscribe()` now sends the unsubscribe request (codes
   16/18/22) to the server; it previously only dropped local state, so the
   server kept streaming.

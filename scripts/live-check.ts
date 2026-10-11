@@ -7,7 +7,10 @@
  *   npm run live-check -- --place-test-order
  *
  * Environment (see README "Live testing"):
- *   DHAN_CLIENT_ID, DHAN_ACCESS_TOKEN (or DHAN_TOKEN)   production credentials
+ *   DHAN_CLIENT_ID                                       production client id
+ *   DHAN_PIN + DHAN_TOTP_SECRET                          PIN/TOTP login, token cached in
+ *                                                        ~/.dhanhq (DHAN_TOKEN_CACHE_DIR)
+ *   or DHAN_ACCESS_TOKEN (or DHAN_TOKEN)                 a static token
  *   DHAN_MODE=live|sandbox|hybrid                         default live
  *   DHAN_SANDBOX_CLIENT_ID, DHAN_SANDBOX_ACCESS_TOKEN     required for hybrid
  *   TEST_EXCHANGE_SEGMENT (NSE_EQ), TEST_SECURITY_ID (1333 = HDFCBANK)
@@ -38,6 +41,12 @@ const securityId = process.env.TEST_SECURITY_ID ?? "1333";
 function build(): DhanClient {
   const env = { ...process.env, DHAN_ACCESS_TOKEN: process.env.DHAN_ACCESS_TOKEN ?? process.env.DHAN_TOKEN };
   return DhanClient.fromEnv(env);
+}
+
+function describeAuth(client: DhanClient): string {
+  if (!client.getTokenManager()) return "static access token (DHAN_ACCESS_TOKEN)";
+  const cacheOff = ["off", "false", "0"].includes((process.env.DHAN_TOKEN_CACHE ?? "").trim().toLowerCase());
+  return cacheOff ? "PIN/TOTP login, no token cache" : "PIN/TOTP login, cached token reused while valid";
 }
 
 async function check<T>(name: string, run: () => Promise<T>, describe: (value: T) => string = () => ""): Promise<T | undefined> {
@@ -181,9 +190,12 @@ async function main(): Promise<void> {
   const client = build();
   const config = client.getConfig();
   console.log(`Mode: ${config.mode ?? "live"}`);
+  console.log(`Auth: ${describeAuth(client)}`);
   console.log(`Routing: orders -> ${new URL(clientUrl(config, "/orders")).host}, market data -> ${new URL(clientUrl(config, "/marketfeed/ltp")).host}`);
 
   const ltp = await readChecks(client);
+  const managed = client.getTokenManager()?.getToken();
+  if (managed?.expiresAt) console.log(`Token valid until ${new Date(managed.expiresAt).toISOString()}`);
   if (args.has("--ws")) await wsCheck(client);
   if (args.has("--place-test-order")) await orderRoundTrip(client, ltp);
 

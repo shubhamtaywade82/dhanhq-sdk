@@ -555,6 +555,11 @@ DHAN_MODE=hybrid npm run live-check -- --ws --place-test-order   # sandbox order
 LIVE_TRADING=true npm run live-check -- --place-test-order       # REAL order
 ```
 
+Credentials come from `DhanClient.fromEnv()`: `DHAN_PIN` + `DHAN_TOTP_SECRET`
+log in automatically and cache the token in `~/.dhanhq`, so repeated runs reuse
+it instead of logging in again (which could invalidate a running bot's token);
+otherwise `DHAN_ACCESS_TOKEN` is used as is.
+
 The test order is a **1-share CNC LIMIT BUY** of `TEST_SECURITY_ID` (default
 `1333`, HDFCBANK on `NSE_EQ`) priced `TEST_ORDER_OFFSET_PCT` (default 5, clamped
 to 2–15) below the LTP, so it rests unfilled; the script then cancels it and
