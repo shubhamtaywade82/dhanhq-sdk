@@ -6,6 +6,30 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **BREAKING:** `openapi.json` is re-pinned to the live DhanHQ spec
+  (`https://api.dhan.co/v2/v3/api-docs`, 2026-10-24) and `src/generated` is
+  regenerated. The generated `ConditionalTriggersService` is now
+  `ConditionalAndMultiOrderService`, because Dhan's spec groups conditional
+  triggers with the new multi-order alerts. Code importing
+  `Generated.ConditionalTriggersService` must switch to
+  `Generated.ConditionalAndMultiOrderService`. `client.conditionalTriggers`
+  is hand-written and unchanged.
+
+### Added
+
+- Generated clients and models for the operations Dhan added since the
+  2026-03-21 pin: Global Stocks (`GlobalStocksService`), the data APIs
+  (`/data/companyinfo`, `/data/marketmovers`, `/data/newsheadline`,
+  `/data/technical` in `DataApiSService`), and `/alerts/multi/orders`. The
+  hand-written resources already covered these.
+- The generated `OrderRequest` (used by `POST /orders` and
+  `POST /orders/slicing`) gains Dhan's new optional `algoId` field. The
+  hand-written `client.orders.place()` does not send it yet: Dhan's order
+  docs only document `algoId` on order responses, not as a request
+  parameter.
+
 ### Added
 
 - **Weekly upstream drift watch.** `npm run upstream:drift` diffs
