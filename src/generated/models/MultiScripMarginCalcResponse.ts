@@ -11,5 +11,8 @@ export type MultiScripMarginCalcResponse = {
     foMargin?: number;
     commodity?: number;
     currency?: number;
+    hedgeBenefit?: number;
+    userFundLimit?: number;
+    insufficientFund?: number;
 };
 

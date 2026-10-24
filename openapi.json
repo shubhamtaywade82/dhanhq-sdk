@@ -808,9 +808,9 @@
     "/alerts/orders/{alertId}": {
       "get": {
         "tags": [
-          "Conditional Triggers"
+          "Conditional and Multi Order"
         ],
-        "summary": "get conditional trigger by ID",
+        "summary": "get conditional order by ID",
         "description": "Retrieve the status and detailed conditional triggers for a specific alert order by its unique identification ",
         "externalDocs": {
           "description": "please refer the link for detailed docs",
@@ -850,9 +850,9 @@
       },
       "put": {
         "tags": [
-          "Conditional Triggers"
+          "Conditional and Multi Order"
         ],
-        "summary": "modify conditional trigger",
+        "summary": "modify conditional order",
         "description": "Modify an existing alert order by updating its conditional trigger logic and/or the associated order execution parameters.",
         "externalDocs": {
           "description": "please refer the link for detailed docs",
@@ -902,9 +902,9 @@
       },
       "delete": {
         "tags": [
-          "Conditional Triggers"
+          "Conditional and Multi Order"
         ],
-        "summary": "delete conditional trigger",
+        "summary": "delete conditional order",
         "description": "Delete an existing conditional trigger using its unique identifier.",
         "externalDocs": {
           "description": "please refer the link for detailed docs",
@@ -946,9 +946,9 @@
     "/alerts/orders": {
       "get": {
         "tags": [
-          "Conditional Triggers"
+          "Conditional and Multi Order"
         ],
-        "summary": "get all conditional triggers",
+        "summary": "get all conditional orders",
         "description": "Retrieve a list of all conditional triggers for the authenticated account, along with their current status and configuration details.",
         "externalDocs": {
           "description": "please refer the link for detailed docs",
@@ -983,9 +983,9 @@
       },
       "post": {
         "tags": [
-          "Conditional Triggers"
+          "Conditional and Multi Order"
         ],
-        "summary": "place conditional trigger",
+        "summary": "place conditional order",
         "description": "The Conditional Trigger (Alerts) API lets you define conditions (price or technical indicators) that, when met, place one or multiple orders automatically on the user’s Dhan account. It supports multiple combinations of indicators and operators along with optional webhook callbacks.  \n**Notes** :\n* Conditions are currently supported only for Equities and Indices. \n* You can receive a postback update by providing a Webhook URL while generating the Access Token.",
         "externalDocs": {
           "description": "please refer the link for detailed docs",
@@ -1019,6 +1019,52 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AlertOrderResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/alerts/multi/orders": {
+      "post": {
+        "tags": [
+          "Conditional and Multi Order"
+        ],
+        "summary": "place multi order",
+        "description": "Place a multi order directly without any conditions.",
+        "externalDocs": {
+          "description": "please refer the link for detailed docs",
+          "url": "https://dhanhq.co/docs/v2/"
+        },
+        "operationId": "placeMultiOrder",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MultiOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MultiOrderResponse"
                 }
               }
             }
@@ -1903,6 +1949,190 @@
         }
       }
     },
+    "/data/technical": {
+      "post": {
+        "tags": [
+          "Data API's"
+        ],
+        "summary": "technical data",
+        "description": "Fetch technical indicator values for an instrument. Pass the indicators you need - only those are computed and returned. All values are point-in-time as of the latest closed candle for the requested timeframe.",
+        "externalDocs": {
+          "description": "please refer the link for detailed docs",
+          "url": "https://dhanhq.co/docs/v2/"
+        },
+        "operationId": "technicalMetrics",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TechnicalMetricsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TechnicalMetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/newsheadline": {
+      "post": {
+        "tags": [
+          "Data API's"
+        ],
+        "summary": "live news headline",
+        "description": "Fetch the latest news headlines as of now, filterable by category and stock, capped at limit (max 50) items.",
+        "externalDocs": {
+          "description": "please refer the link for detailed docs",
+          "url": "https://dhanhq.co/docs/v2/"
+        },
+        "operationId": "newsHeadline",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsHeadlineRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsHeadlineResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/marketmovers": {
+      "post": {
+        "tags": [
+          "Data API's"
+        ],
+        "summary": "market movers",
+        "description": "Fetch top options, futures, and stocks ranked by open interest, traded volume, or price movement. Select the instrument type(s) and ranking category to retrieve the highest-ranked instruments.",
+        "externalDocs": {
+          "description": "please refer the link for detailed docs",
+          "url": "https://dhanhq.co/docs/v2/"
+        },
+        "operationId": "marketMovers",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TopInstrumentsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TopInstrumentsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/data/companyinfo": {
+      "post": {
+        "tags": [
+          "Data API's"
+        ],
+        "summary": "company info",
+        "description": "Fetch key company information for a single equity instrument, including company overview, valuation and profitability ratios, industry benchmarks, shareholding pattern, and key price and financial indicators.",
+        "externalDocs": {
+          "description": "please refer the link for detailed docs",
+          "url": "https://dhanhq.co/docs/v2/"
+        },
+        "operationId": "companyInfo",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FundamentalMetricsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FundamentalMetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/charts/rollingoption": {
       "post": {
         "tags": [
@@ -2034,6 +2264,468 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ChartsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/orders/{order-id}": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get order by order ID",
+        "description": "Retrieve a specific order by order ID.",
+        "operationId": "getOrderByOrderId",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InxOrderResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Modify order",
+        "description": "Modify an existing order.",
+        "operationId": "modifyOrder",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InxModifyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Cancel order",
+        "description": "Cancel an existing order.",
+        "operationId": "cancelOrder",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "order-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/transEstimate": {
+      "post": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Order estimator",
+        "description": "Calculate order estimation.",
+        "operationId": "getOrderEstimator",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InxEstimatorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InxEstimatorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/orders": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get order book",
+        "description": "Retrieve all orders placed.",
+        "operationId": "getOrders",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InxOrderResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Place Order",
+        "description": "Place a new order.",
+        "operationId": "placeOrder",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InxOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/margincalculator": {
+      "post": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Margin Calculator",
+        "description": "Calculate margin requirements.",
+        "operationId": "getKnowYourMargin",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InxEstimatorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InxMarginResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/trades": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get past trades",
+        "description": "Retrieve past trades.",
+        "operationId": "getPastTrades",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InxTradeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/trades/{security-id}": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get past trades by script",
+        "description": "Retrieve past trades for a specific security.",
+        "operationId": "getPastTradesByScript",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "security-id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InxTradeResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/marketstatus": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get market status",
+        "description": "Retrieve market status.",
+        "operationId": "getMarketStatus",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InxMarketStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/holdings": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get holdings",
+        "description": "Retrieve holdings for the user.",
+        "operationId": "getHoldings",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InxHoldingResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/globalstocks/fundlimit": {
+      "get": {
+        "tags": [
+          "Global Stocks"
+        ],
+        "summary": "Get fund limit",
+        "description": "Get fund limit details.",
+        "operationId": "getFundLimit",
+        "parameters": [
+          {
+            "name": "access-token",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InxFundLimitResponse"
                 }
               }
             }
@@ -2215,6 +2907,66 @@
           "status": {
             "type": "string",
             "description": "| **Enum Values** | **Description** |\n|-----------------|----------------|\n| SUCCESS         | Operation was successful |\n| ERROR           | Operation failed |"
+          }
+        }
+      },
+      "InxModifyRequest": {
+        "required": [
+          "orderType",
+          "securityId",
+          "transactionType"
+        ],
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type - MARKET, LIMIT, STOP_LOSS, STOP_LOSS_MARKET",
+            "enum": [
+              "MARKET",
+              "LIMIT",
+              "STOP_LOSS",
+              "STOP_LOSS_MARKET",
+              "AMOUNT"
+            ]
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Transaction type - BUY or SELL",
+            "enum": [
+              "BUY",
+              "SELL"
+            ]
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Number of shares for the order",
+            "format": "float"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price at which order is placed",
+            "format": "float"
+          },
+          "legName": {
+            "type": "string",
+            "description": "Leg name - ENTRY_LEG, STOP_LOSS_LEG, TARGET_LEG",
+            "enum": [
+              "ENTRY_LEG",
+              "STOP_LOSS_LEG",
+              "TARGET_LEG",
+              "NA",
+              "ENTRY_LEG",
+              "STOP_LOSS_LEG",
+              "TARGET_LEG"
+            ]
           }
         }
       },
@@ -2867,6 +3619,10 @@
             "type": "number",
             "description": "Bracket Order/Cover Order Stop Loss Price",
             "format": "float"
+          },
+          "algoId": {
+            "type": "string",
+            "description": "Optional algo identifier"
           }
         }
       },
@@ -3081,6 +3837,18 @@
           "currency": {
             "type": "number",
             "format": "double"
+          },
+          "hedgeBenefit": {
+            "type": "number",
+            "format": "double"
+          },
+          "userFundLimit": {
+            "type": "number",
+            "format": "double"
+          },
+          "insufficientFund": {
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -3094,6 +3862,188 @@
           "killSwitchStatus": {
             "type": "string",
             "description": "| **Enum Values**   | **Description**        |\n|-------------------|------------------------|\n| ACTIVATE          | KillSwitch Activated   |\n| DEACTIVATE        | KillSwitch Deactivated |"
+          }
+        }
+      },
+      "IndicatorSubscribeRequest": {
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string"
+          },
+          "indicatorId": {
+            "type": "string"
+          },
+          "expiryDate": {
+            "type": "string"
+          }
+        }
+      },
+      "InxEstimatorRequest": {
+        "required": [
+          "price",
+          "quantity",
+          "securityId",
+          "transactionType"
+        ],
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "price": {
+            "type": "string",
+            "description": "Price at which order is placed"
+          },
+          "quantity": {
+            "type": "string",
+            "description": "Number of shares (fractional supported)"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Transaction type - BUY(B) or SELL(S)"
+          }
+        }
+      },
+      "InxEstimatorResponse": {
+        "type": "object",
+        "properties": {
+          "brokerage": {
+            "type": "number",
+            "description": "Brokerage charges",
+            "format": "float"
+          },
+          "orderCharges": {
+            "type": "number",
+            "description": "Total order charges",
+            "format": "float"
+          },
+          "exchangeCharges": {
+            "type": "number",
+            "description": "Exchange charges",
+            "format": "float"
+          },
+          "turnOverFee": {
+            "type": "number",
+            "description": "Turnover fee",
+            "format": "float"
+          },
+          "gstCharges": {
+            "type": "number",
+            "description": "GST charges",
+            "format": "float"
+          },
+          "otherCharges": {
+            "type": "number",
+            "description": "Other charges",
+            "format": "float"
+          }
+        }
+      },
+      "InxOrderRequest": {
+        "required": [
+          "orderType",
+          "securityId",
+          "transactionType"
+        ],
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "correlationId": {
+            "maxLength": 30,
+            "minLength": 0,
+            "type": "string",
+            "description": "The user/partner generated id for tracking back"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Transaction type - BUY or SELL",
+            "enum": [
+              "BUY",
+              "SELL"
+            ]
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type - MKT, LMT, SL, SLM, AMT",
+            "enum": [
+              "MARKET",
+              "LIMIT",
+              "STOP_LOSS",
+              "STOP_LOSS_MARKET",
+              "AMOUNT"
+            ]
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Number of shares for the order",
+            "format": "float"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price at which order is placed",
+            "format": "float"
+          },
+          "triggerPrice": {
+            "type": "number",
+            "description": "Trigger price for SL/SLM orders",
+            "format": "float"
+          },
+          "stopLossPrice": {
+            "type": "number",
+            "description": "Stop Loss Price for Super Order",
+            "format": "float"
+          },
+          "targetPrice": {
+            "type": "number",
+            "description": "Target Price for Super Order",
+            "format": "float"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount for AMT order type",
+            "format": "float"
+          },
+          "afterMarketOrder": {
+            "type": "boolean",
+            "description": "Flag to inform that the order placed is After Market Order"
+          }
+        }
+      },
+      "InxMarginResponse": {
+        "type": "object",
+        "properties": {
+          "insufficientBal": {
+            "type": "number",
+            "description": "Insufficient balance",
+            "format": "float"
+          },
+          "brokerage": {
+            "type": "number",
+            "description": "Brokerage",
+            "format": "float"
+          },
+          "leverage": {
+            "type": "string",
+            "description": "Leverage"
+          },
+          "totalMargin": {
+            "type": "number",
+            "description": "Total margin required",
+            "format": "float"
+          },
+          "availableBal": {
+            "type": "number",
+            "description": "Available balance",
+            "format": "float"
           }
         }
       },
@@ -3282,6 +4232,686 @@
               "COMM",
               "FNO"
             ]
+          }
+        }
+      },
+      "TechnicalMetricsRequest": {
+        "required": [
+          "exchangeSegment",
+          "indicators",
+          "instrument",
+          "securityId",
+          "timeframe"
+        ],
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "pattern": "\\d+",
+            "type": "string",
+            "description": "Exchange standard ID for each security  \n For eg. \"1333\""
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "| **Enums**    | **Exchange** | **Segment**       |\n|--------------|--------------|-------------------|\n| NSE_EQ       | NSE          | Equity Cash       |\n| IDX_I        | INDEX        | Indices           |",
+            "enum": [
+              "NSE_EQ",
+              "IDX_I"
+            ]
+          },
+          "instrument": {
+            "type": "string",
+            "description": "| **Enums** | **Description**        |\n|-----------|-------------------------|\n| INDEX     | Index                   |\n| EQUITY    | Equity                  |",
+            "enum": [
+              "INDEX",
+              "EQUITY"
+            ]
+          },
+          "timeframe": {
+            "type": "string",
+            "description": "Candle size used to compute all indicators in this request.  \n**Note** : For intraday timeframes (1, 5, 15), indicators use candles from the current trading session only.\n\n| **Value** | **Type**  | **Description**                                           |\n|-----------|-----------|------------------------------------------------------------|\n| 1         | Intraday  | 1-minute candles                                           |\n| 5         | Intraday  | 5-minute candles                                           |\n| 15        | Intraday  | 15-minute candles                                          |\n| D         | Daily     | End-of-day daily candles. Default for positional analysis. |",
+            "enum": [
+              "1",
+              "5",
+              "15",
+              "D"
+            ]
+          },
+          "indicators": {
+            "maxItems": 2147483647,
+            "minItems": 1,
+            "type": "array",
+            "description": "Array of indicator identifiers to fetch. Only the indicators passed here are computed and returned.  \nFor eg. [ \"SMA_20\", \"RSI_14\", \"MACD_HIST\" ]\n\n**Moving Averages**\n\n| **Identifier** | **Description**                       |\n|-----------------|----------------------------------------|\n| SMA_5           | Simple Moving Average — 5-period       |\n| SMA_10          | Simple Moving Average — 10-period      |\n| SMA_20          | Simple Moving Average — 20-period      |\n| SMA_50          | Simple Moving Average — 50-period      |\n| SMA_100         | Simple Moving Average — 100-period     |\n| SMA_200         | Simple Moving Average — 200-period     |\n| EMA_5           | Exponential Moving Average — 5-period  |\n| EMA_10          | Exponential Moving Average — 10-period |\n| EMA_20          | Exponential Moving Average — 20-period |\n| EMA_50          | Exponential Moving Average — 50-period |\n| EMA_100         | Exponential Moving Average — 100-period|\n| EMA_200         | Exponential Moving Average — 200-period|\n\n**Momentum / Oscillators**\n\n| **Identifier** | **Description**                                           | **Fixed Parameters**         |\n|-----------------|-------------------------------------------------------------|-------------------------------|\n| RSI_14          | Relative Strength Index                                      | Period: 14                    |\n| MACD_HIST       | MACD histogram (MACD line minus Signal line)                 | Fast: 12 / Slow: 26 / Signal: 9|\n| STOCH           | Stochastic Oscillator                                        | K: 9 / D: 6                    |\n| STOCHRSI_14     | Stochastic RSI                                               | Period: 14                    |\n| ATR_14          | Average True Range                                           | Period: 14                    |\n| ADX_14          | Average Directional Index — trend strength, not direction    | Period: 14                    |\n| UO              | Ultimate Oscillator                                          | Periods: 7 / 14 / 28          |\n| ROC             | Rate of Change                                               | Period: 12                    |\n| WILLR           | Williams %R                                                  | Period: 14                    |\n\n**Pivot Points**\n\n**Note** : Pivot levels always use the previous session's OHLC regardless of the timeframe in the request.\n\n| **Identifier**  | **Description**                                                                                     |\n|------------------|-------------------------------------------------------------------------------------------------------|\n| PIVOT_CLASSIC    | Standard floor pivot. Levels computed from previous session OHLC.                                     |\n| PIVOT_FIBONACCI  | Fibonacci ratios applied to the pivot range.                                                           |\n| PIVOT_CAMARILLA  | Tighter intraday levels derived from close and previous range.                                        |\n\n",
+            "items": {
+              "type": "string",
+              "description": "Array of indicator identifiers to fetch. Only the indicators passed here are computed and returned.  \nFor eg. [ \"SMA_20\", \"RSI_14\", \"MACD_HIST\" ]\n\n**Moving Averages**\n\n| **Identifier** | **Description**                       |\n|-----------------|----------------------------------------|\n| SMA_5           | Simple Moving Average — 5-period       |\n| SMA_10          | Simple Moving Average — 10-period      |\n| SMA_20          | Simple Moving Average — 20-period      |\n| SMA_50          | Simple Moving Average — 50-period      |\n| SMA_100         | Simple Moving Average — 100-period     |\n| SMA_200         | Simple Moving Average — 200-period     |\n| EMA_5           | Exponential Moving Average — 5-period  |\n| EMA_10          | Exponential Moving Average — 10-period |\n| EMA_20          | Exponential Moving Average — 20-period |\n| EMA_50          | Exponential Moving Average — 50-period |\n| EMA_100         | Exponential Moving Average — 100-period|\n| EMA_200         | Exponential Moving Average — 200-period|\n\n**Momentum / Oscillators**\n\n| **Identifier** | **Description**                                           | **Fixed Parameters**         |\n|-----------------|-------------------------------------------------------------|-------------------------------|\n| RSI_14          | Relative Strength Index                                      | Period: 14                    |\n| MACD_HIST       | MACD histogram (MACD line minus Signal line)                 | Fast: 12 / Slow: 26 / Signal: 9|\n| STOCH           | Stochastic Oscillator                                        | K: 9 / D: 6                    |\n| STOCHRSI_14     | Stochastic RSI                                               | Period: 14                    |\n| ATR_14          | Average True Range                                           | Period: 14                    |\n| ADX_14          | Average Directional Index — trend strength, not direction    | Period: 14                    |\n| UO              | Ultimate Oscillator                                          | Periods: 7 / 14 / 28          |\n| ROC             | Rate of Change                                               | Period: 12                    |\n| WILLR           | Williams %R                                                  | Period: 14                    |\n\n**Pivot Points**\n\n**Note** : Pivot levels always use the previous session's OHLC regardless of the timeframe in the request.\n\n| **Identifier**  | **Description**                                                                                     |\n|------------------|-------------------------------------------------------------------------------------------------------|\n| PIVOT_CLASSIC    | Standard floor pivot. Levels computed from previous session OHLC.                                     |\n| PIVOT_FIBONACCI  | Fibonacci ratios applied to the pivot range.                                                           |\n| PIVOT_CAMARILLA  | Tighter intraday levels derived from close and previous range.                                        |\n\n"
+            }
+          }
+        }
+      },
+      "TechnicalMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "type": "string",
+            "description": "Echoed from request"
+          },
+          "timeframe": {
+            "type": "string",
+            "description": "Echoed from request"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| data | Object | Keyed by indicator type. Only requested indicators are present. | { \"SMA\": [...], \"RSI\": {...} } |\n\nNote : SMA and EMA return an array of objects (one per requested period). All other indicators return a single object. PIVOT returns an object keyed by method name (Classic, Fibonacci, Camarilla).  \n\nNote : action labels per indicator — SMA/EMA: Bullish / Bearish. RSI/STOCH/STOCHRSI/WILLR: Overbought / Oversold / Neutral. MACD: Bullish / Bearish. ATR: More Volatile / Less Volatile. ADX: Strong Trend / Weak Trend. UO: Bullish / Bearish. ROC: Uptrend And Accelerating / Decelerating / Downtrend And Accelerating / Decelerating."
+            },
+            "description": "| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| data | Object | Keyed by indicator type. Only requested indicators are present. | { \"SMA\": [...], \"RSI\": {...} } |\n\nNote : SMA and EMA return an array of objects (one per requested period). All other indicators return a single object. PIVOT returns an object keyed by method name (Classic, Fibonacci, Camarilla).  \n\nNote : action labels per indicator — SMA/EMA: Bullish / Bearish. RSI/STOCH/STOCHRSI/WILLR: Overbought / Oversold / Neutral. MACD: Bullish / Bearish. ATR: More Volatile / Less Volatile. ADX: Strong Trend / Weak Trend. UO: Bullish / Bearish. ROC: Uptrend And Accelerating / Decelerating / Downtrend And Accelerating / Decelerating."
+          }
+        },
+        "example": {
+          "securityId": "1333",
+          "timeframe": "D",
+          "data": {
+            "SMA": [
+              {
+                "period": 20,
+                "value": 22.5855,
+                "action": "Bearish"
+              }
+            ],
+            "EMA": [
+              {
+                "period": 20,
+                "value": 23.1731,
+                "action": "Bearish"
+              }
+            ],
+            "RSI": {
+              "value": 44.9067,
+              "action": "Neutral"
+            },
+            "MACD_HIST": {
+              "value": -0.0241,
+              "action": "Bearish"
+            },
+            "PIVOT": {
+              "Classic": {
+                "PP": 22.98,
+                "R1": 23.14,
+                "R2": 23.31,
+                "R3": 23.47,
+                "S1": 22.81,
+                "S2": 22.65,
+                "S3": 22.48
+              }
+            }
+          }
+        }
+      },
+      "NewsHeadlineRequest": {
+        "required": [
+          "categories",
+          "dhanClientId",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "categories": {
+            "type": "array",
+            "description": "News category filter. ALL returns all categories, unfiltered. Mandatory - cannot be null, omitted, or an empty array.",
+            "example": [
+              "ALL"
+            ],
+            "items": {
+              "type": "string",
+              "description": "| **Identifier** |\n|-----------------|\n| ALL |\n| COMPANIES |\n| EQUITY_MARKETS |\n| DEBT_MARKETS |\n| IPO |\n| GLOBAL |\n| INDIAN_ECONOMY |\n| GLOBAL_ECONOMY |\n| CURRENCY |\n| COMMODITIES |\n| CRYPTOCURRENCIES |\n| GOVERNMENT_POLICY_AND_REGULATION |\n| INFRASTRUCTURE |\n| INTERNATIONAL_TRADE |\n| INVESTMENT_IDEAS |\n| REAL_ESTATE |\n| STARTUPS |\n| TECHNOLOGY |\n| MUTUAL_FUNDS |",
+              "enum": [
+                "ALL",
+                "COMPANIES",
+                "EQUITY_MARKETS",
+                "DEBT_MARKETS",
+                "IPO",
+                "GLOBAL",
+                "INDIAN_ECONOMY",
+                "GLOBAL_ECONOMY",
+                "CURRENCY",
+                "COMMODITIES",
+                "CRYPTOCURRENCIES",
+                "GOVERNMENT_POLICY_AND_REGULATION",
+                "INFRASTRUCTURE",
+                "INTERNATIONAL_TRADE",
+                "INVESTMENT_IDEAS",
+                "REAL_ESTATE",
+                "STARTUPS",
+                "TECHNOLOGY",
+                "MUTUAL_FUNDS"
+              ]
+            }
+          },
+          "limit": {
+            "maximum": 50,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Max number of news items to return, counted from the current date/time backwards. Allowed range is 1 to 50.  \n For eg. 50",
+            "format": "int32",
+            "example": 1
+          },
+          "universe": {
+            "type": "string",
+            "description": "Scopes the news to the caller's portfolio or watchlist. Optional - omit for no scoping (must be a string, not null , not empty).  \n",
+            "enum": [
+              "PORTFOLIO",
+              "WATCHLIST",
+              "PORTFOLIO",
+              "WATCHLIST"
+            ]
+          },
+          "stockList": {
+            "type": "array",
+            "description": "Security IDs to filter news by specific stocks. Empty array or omitted means no stock filter. Optional, but if included must be an array (null is not allowed) and cannot contain null entries.",
+            "example": [],
+            "items": {
+              "type": "string",
+              "description": "Security ID to filter news by a specific stock."
+            }
+          }
+        }
+      },
+      "NewsData": {
+        "type": "object",
+        "properties": {
+          "latestNews": {
+            "type": "array",
+            "description": "List of latest news items matching the request filters. Empty when the vendor has no items for this bucket (e.g. narrow date/time filters where matches only fall under nextNews).",
+            "items": {
+              "$ref": "#/components/schemas/NewsHeadlineDetail"
+            }
+          }
+        },
+        "description": "Container object. latestNews/nextNews hold the returned news items, filtered by category/stock and paginated per the request."
+      },
+      "NewsHeadlineDetail": {
+        "type": "object",
+        "properties": {
+          "newsObject": {
+            "$ref": "#/components/schemas/NewsObject"
+          },
+          "category": {
+            "type": "string",
+            "description": "Top-level news category."
+          },
+          "subCategory": {
+            "type": "string",
+            "description": "News sub-category."
+          },
+          "publishDate": {
+            "type": "string",
+            "description": "Article publish date, in YYYY-MM-DD format."
+          },
+          "stockName": {
+            "type": "string",
+            "description": "Full company name."
+          },
+          "isinCode": {
+            "type": "string",
+            "description": "ISIN of the security."
+          },
+          "smSymbol": {
+            "type": "string",
+            "description": "Short market symbol."
+          },
+          "nseScripCode": {
+            "type": "integer",
+            "description": "NSE scrip code.",
+            "format": "int32"
+          },
+          "bseScripCode": {
+            "type": "integer",
+            "description": "BSE scrip code.",
+            "format": "int32"
+          },
+          "displaySymbol": {
+            "type": "string",
+            "description": "Human-readable display name."
+          },
+          "tickSize": {
+            "type": "number",
+            "description": "Minimum price movement.",
+            "format": "double"
+          },
+          "lotSize": {
+            "type": "integer",
+            "description": "Units per market lot.",
+            "format": "int32"
+          }
+        },
+        "description": "List of latest news items matching the request filters. Empty when the vendor has no items for this bucket (e.g. narrow date/time filters where matches only fall under nextNews)."
+      },
+      "NewsHeadlineResponse": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NewsData"
+          }
+        },
+        "example": {
+          "data": {
+            "latestNews": [
+              {
+                "newsObject": {
+                  "overallSentiment": "positive",
+                  "title": "Magellanic Cloud wins Rs 12.13 crore order from Western Railway",
+                  "text": "Magellanic Cloud secures Rs 12.13 crore work order from Western Railway for telecom infrastructure."
+                },
+                "category": "companies",
+                "subCategory": "orders-deals",
+                "publishDate": "2026-08-24",
+                "stockName": "MAGELLANIC CLOUD LIMITED",
+                "isinCode": "INE613C01026",
+                "smSymbol": "MCLOUD",
+                "nseScripCode": 29482,
+                "bseScripCode": 538891,
+                "displaySymbol": "Magellanic Cloud",
+                "tickSize": 0.01,
+                "lotSize": 1
+              }
+            ]
+          }
+        }
+      },
+      "NewsObject": {
+        "type": "object",
+        "properties": {
+          "overallSentiment": {
+            "type": "string",
+            "description": "Sentiment of the article.",
+            "enum": [
+              "positive",
+              "negative",
+              "neutral"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "description": "Article headline."
+          },
+          "text": {
+            "type": "string",
+            "description": "Full article body/summary."
+          }
+        },
+        "description": "Article headline, sentiment, and full text."
+      },
+      "TopInstrumentsRequest": {
+        "required": [
+          "category",
+          "exchangeSegment",
+          "instrument",
+          "limit"
+        ],
+        "type": "object",
+        "properties": {
+          "exchangeSegment": {
+            "type": "string",
+            "description": "| **Enums** | **Description**                      |\n|-----------|---------------------------------------|\n| NSE_FNO   | NSE Futures and Options segment.       |\n| BSE_FNO   | BSE Futures and Options segment.       |\n| NSE_COMM  | NSE Commodity Derivatives segment.      |\n| MCX_COMM  | MCX Commodity Derivatives segment.      |\n| NSE_EQ    | NSE Equity segment.                    |\n| BSE_EQ    | BSE Equity segment.                    |",
+            "enum": [
+              "NSE_FNO",
+              "BSE_FNO",
+              "NSE_COMM",
+              "MCX_COMM",
+              "NSE_EQ",
+              "BSE_EQ"
+            ]
+          },
+          "instrument": {
+            "maxItems": 2147483647,
+            "minItems": 1,
+            "type": "array",
+            "description": "Instrument types to include in the result. Minimum one value is required. All values must belong to the same group (options, futures, or equity) - they cannot be mixed.",
+            "example": [
+              "OPTIDX",
+              "OPTSTK"
+            ],
+            "items": {
+              "maxLength": 2147483647,
+              "minLength": 1,
+              "type": "string",
+              "description": "| **Value** | **Description**        |\n|-----------|-------------------------|\n| OPTIDX    | Index options.          |\n| OPTSTK    | Stock options.          |\n| OPTFUT    | Commodity options.      |\n| FUTIDX    | Index futures.          |\n| FUTSTK    | Stock futures.          |\n| FUTCOM    | Commodity futures.      |\n| EQUITY    | Cash-market equity instruments. |",
+              "enum": [
+                "OPTIDX",
+                "OPTSTK",
+                "OPTFUT",
+                "FUTIDX",
+                "FUTSTK",
+                "FUTCOM",
+                "EQUITY"
+              ]
+            }
+          },
+          "category": {
+            "type": "string",
+            "description": "Ranking category to apply. Supported categories depend on the selected instrument.  \n\n| **Category**   | **Applicable To** | **Description**                                                             |\n|-----------------|--------------------|-------------------------------------------------------------------------------|\n| HIGHEST_OI      | Options            | Option contracts with the highest current open interest.                       |\n| OI_GAINERS      | Options, Futures   | Derivative contracts with the highest positive percentage change in open interest. |\n| OI_LOSERS       | Options, Futures   | Derivative contracts with the highest decline in open interest by percentage.  |\n| TOP_VOLUME      | Options, Futures   | Derivative contracts with the highest traded volume during the current session. |\n| PRICE_GAINERS   | Stocks             | Equity instruments with the highest positive percentage price change.          |\n| PRICE_LOSERS    | Stocks             | Equity instruments with the highest negative percentage price change.         |",
+            "enum": [
+              "HIGHEST_OI",
+              "OI_GAINERS",
+              "OI_LOSERS",
+              "TOP_VOLUME",
+              "PRICE_GAINERS",
+              "PRICE_LOSERS"
+            ]
+          },
+          "expiry": {
+            "type": "string",
+            "description": "Expiry date of the derivative contracts in YYYY-MM-DD format. Required when instrument is an option or future contract. Optional and ignored when instrument is EQUITY.  \n For eg. \"2026-07-28\"",
+            "example": "yyyy-mm-dd"
+          },
+          "universe": {
+            "type": "string",
+            "description": "Stock universe within which instruments are ranked. Required when instrument is EQUITY; ignored otherwise (its presence or absence has no effect for options/futures).  \n\n| **Enums**              | **Description**                                                        |\n|--------------------------|-------------------------------------------------------------------------|\n| ALL                      | All supported equity instruments in the selected exchange segment.       |\n| FNO_STOCKS               | Equity instruments whose derivatives are available in the F&O segment.  |\n| NIFTY_50                 | Equity constituents of the Nifty 50 index.                              |\n| NIFTY_BANK               | Equity constituents of the Nifty Bank index.                            |\n| FINNIFTY                 | Equity constituents of the Nifty Financial Services (FinNifty) index.   |\n| INDIA_VIX                | Equity constituents of the India VIX index.                             |\n| NIFTY_MIDCAP             | Equity constituents of the Nifty Midcap index.                          |\n| NIFTY_NEXT_50            | Equity constituents of the Nifty Next 50 index.                         |\n| NIFTY_SMALLCAP_50        | Equity constituents of the Nifty Smallcap 50 index.                     |\n| NIFTY_MID_CAP_50         | Equity constituents of the Nifty Midcap 50 index.                       |\n| NIFTY_100                | Equity constituents of the Nifty 100 index.                             |\n| NIFTY_200                | Equity constituents of the Nifty 200 index.                             |\n| NIFTY_500                | Equity constituents of the Nifty 500 index.                             |\n| NIFTY_MIDCAP_100         | Equity constituents of the Nifty Midcap 100 index.                      |\n| NIFTY_MIDCAP_150         | Equity constituents of the Nifty Midcap 150 index.                      |\n| NIFTY_SMALLCAP_100       | Equity constituents of the Nifty Smallcap 100 index.                    |\n| NIFTY_SMALLCAP_250       | Equity constituents of the Nifty Smallcap 250 index.                    |\n| NIFTY_MICROCAP_250       | Equity constituents of the Nifty Microcap 250 index.                    |\n| NIFTY_AUTO               | Equity constituents of the Nifty Auto index.                            |\n| NIFTY_PRIVATE_BANK       | Equity constituents of the Nifty Private Bank index.                    |\n| NIFTY_FMCG               | Equity constituents of the Nifty FMCG index.                            |\n| NIFTY_ENERGY             | Equity constituents of the Nifty Energy index.                          |\n| NIFTY_INFRA              | Equity constituents of the Nifty Infrastructure index.                  |\n| NIFTY_IT                 | Equity constituents of the Nifty IT index.                              |\n| NIFTY_MEDIA              | Equity constituents of the Nifty Media index.                           |\n| NIFTY_METAL              | Equity constituents of the Nifty Metal index.                           |\n| NIFTY_MNC                | Equity constituents of the Nifty MNC index.                             |\n| NIFTY_PHARMA             | Equity constituents of the Nifty Pharma index.                          |\n| NIFTY_PSU_BANK           | Equity constituents of the Nifty PSU Bank index.                        |\n| NIFTY_REALTY             | Equity constituents of the Nifty Realty index.                          |\n| NIFTY_SERVICE_SECTOR     | Equity constituents of the Nifty Services Sector index.                 |\n| NIFTY_CUNSUMPTION        | Equity constituents of the Nifty Consumption index.                     |\n| GIFT_NIFTY               | Equity constituents of the GIFT Nifty index.                            |\n| SENSEX                   | Equity constituents of the Sensex index.                                |\n| BSE_100                  | Equity constituents of the BSE 100 index.                               |\n| BSE_200                  | Equity constituents of the BSE 200 index.                               |\n| BSE_500                  | Equity constituents of the BSE 500 index.                               |\n| BSE_150_MIDCAP           | Equity constituents of the BSE 150 MidCap index.                        |\n| BSE_250_SMALLCAP         | Equity constituents of the BSE 250 SmallCap index.                      |\n| BSE_250_LARGE_MID        | Equity constituents of the BSE 250 Large MidCap index.                  |\n| BSE_400_MID_SMALL        | Equity constituents of the BSE 400 MidSmallCap index.                   |\n| BSE_BANKEX               | Equity constituents of the BSE Bankex index.                            |\n| BSE_AUTO                 | Equity constituents of the BSE Auto index.                              |\n| BSE_CAPITAL_GOODS        | Equity constituents of the BSE Capital Goods index.                     |\n| BSE_CONSUMER_DURABLES    | Equity constituents of the BSE Consumer Durables index.                 |\n| BSE_ENERGY               | Equity constituents of the BSE Energy index.                           |\n| BSE_FINANCE              | Equity constituents of the BSE Finance index.                          |\n| BSE_FMCG                 | Equity constituents of the BSE FMCG index.                             |\n| BSE_HEALTHCARE           | Equity constituents of the BSE Healthcare index.                       |\n| BSE_INDIA_MFG            | Equity constituents of the BSE India Manufacturing index.               |\n| BSE_INDUSTRIALS          | Equity constituents of the BSE Industrials index.                       |\n| BSE_IPO                  | Equity constituents of the BSE IPO index.                               |\n| BSE_IT                   | Equity constituents of the BSE IT index.                                |\n| BSE_METALS               | Equity constituents of the BSE Metal index.                            |\n| BSE_OIL_AND_GAS          | Equity constituents of the BSE Oil & Gas index.                        |\n| BSE_POWER                | Equity constituents of the BSE Power index.                            |\n| BSE_PSU                  | Equity constituents of the BSE PSU index.                              |\n| BSE_TELECOM              | Equity constituents of the BSE Telecom index.                          |",
+            "enum": [
+              "ALL",
+              "FNO_STOCKS",
+              "NIFTY_50",
+              "NIFTY_BANK",
+              "FINNIFTY",
+              "INDIA_VIX",
+              "NIFTY_MIDCAP",
+              "NIFTY_NEXT_50",
+              "NIFTY_SMALLCAP_50",
+              "NIFTY_MID_CAP_50",
+              "NIFTY_100",
+              "NIFTY_200",
+              "NIFTY_500",
+              "NIFTY_MIDCAP_100",
+              "NIFTY_MIDCAP_150",
+              "NIFTY_SMALLCAP_100",
+              "NIFTY_SMALLCAP_250",
+              "NIFTY_MICROCAP_250",
+              "NIFTY_AUTO",
+              "NIFTY_PRIVATE_BANK",
+              "NIFTY_FMCG",
+              "NIFTY_ENERGY",
+              "NIFTY_INFRA",
+              "NIFTY_IT",
+              "NIFTY_MEDIA",
+              "NIFTY_METAL",
+              "NIFTY_MNC",
+              "NIFTY_PHARMA",
+              "NIFTY_PSU_BANK",
+              "NIFTY_REALTY",
+              "NIFTY_SERVICE_SECTOR",
+              "NIFTY_CUNSUMPTION",
+              "GIFT_NIFTY",
+              "SENSEX",
+              "BSE_100",
+              "BSE_200",
+              "BSE_500",
+              "BSE_150_MIDCAP",
+              "BSE_250_SMALLCAP",
+              "BSE_250_LARGE_MID",
+              "BSE_400_MID_SMALL",
+              "BSE_BANKEX",
+              "BSE_AUTO",
+              "BSE_CAPITAL_GOODS",
+              "BSE_CONSUMER_DURABLES",
+              "BSE_ENERGY",
+              "BSE_FINANCE",
+              "BSE_FMCG",
+              "BSE_HEALTHCARE",
+              "BSE_INDIA_MFG",
+              "BSE_INDUSTRIALS",
+              "BSE_IPO",
+              "BSE_IT",
+              "BSE_METALS",
+              "BSE_OIL_AND_GAS",
+              "BSE_POWER",
+              "BSE_PSU",
+              "BSE_TELECOM"
+            ]
+          },
+          "limit": {
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer",
+            "description": "Maximum number of instruments to return. Allowed range is 1 to 100.  \n For eg. 20",
+            "format": "int32"
+          }
+        }
+      },
+      "TopInstrumentDetail": {
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "type": "string",
+            "description": "Exchange-standard security ID of the instrument."
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "Exchange and segment of the instrument."
+          },
+          "tradingSymbol": {
+            "type": "string",
+            "description": "Exchange trading symbol of the instrument."
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Human-readable name of the instrument."
+          },
+          "instrument": {
+            "type": "string",
+            "description": "Instrument type of the security."
+          },
+          "expiry": {
+            "type": "string",
+            "description": "Expiry date in YYYY-MM-DD format. Returns null for stocks."
+          },
+          "strikePrice": {
+            "type": "number",
+            "description": "Strike price of the option contract. Returns null for futures and stocks.",
+            "format": "double"
+          },
+          "tickSize": {
+            "type": "number",
+            "description": "Minimum permitted price movement of the instrument.",
+            "format": "double"
+          },
+          "lotSize": {
+            "type": "integer",
+            "description": "Number of units in one market lot.",
+            "format": "int32"
+          },
+          "ltp": {
+            "type": "number",
+            "description": "Last traded price of the instrument.",
+            "format": "double"
+          },
+          "change": {
+            "type": "number",
+            "description": "Absolute price change from the previous close.",
+            "format": "double"
+          },
+          "changePercent": {
+            "type": "number",
+            "description": "Percentage price change from the previous close.",
+            "format": "double"
+          },
+          "volume": {
+            "type": "integer",
+            "description": "Total traded volume during the current session.",
+            "format": "int64"
+          },
+          "tradedValue": {
+            "type": "number",
+            "description": "Total traded value during the current session.",
+            "format": "double"
+          },
+          "underlyingSecurityId": {
+            "type": "string",
+            "description": "Security ID of the underlying instrument. Applicable to derivatives."
+          },
+          "underlyingLtp": {
+            "type": "number",
+            "description": "Last traded price of the underlying instrument. Applicable to derivatives.",
+            "format": "double"
+          },
+          "premiumDiscount": {
+            "type": "number",
+            "description": "Difference between futures LTP and underlying LTP. Returns null for options and stocks.",
+            "format": "double"
+          },
+          "premiumDiscountPercent": {
+            "type": "number",
+            "description": "Futures premium or discount as a percentage of the underlying LTP. Returns null for options and stocks.",
+            "format": "double"
+          },
+          "openInterest": {
+            "type": "integer",
+            "description": "Current outstanding open interest of the derivative contract. Returns null for stocks.",
+            "format": "int64"
+          },
+          "openInterestChange": {
+            "type": "integer",
+            "description": "Absolute change in open interest from the previous trading session. Returns null for stocks.",
+            "format": "int64"
+          },
+          "openInterestChangePercent": {
+            "type": "number",
+            "description": "Percentage change in open interest from the previous trading session. Returns null for stocks.",
+            "format": "double"
+          },
+          "putCallRatio": {
+            "type": "number",
+            "description": "Put-call ratio for the applicable option universe. Returns null for futures and stocks.",
+            "format": "double"
+          }
+        },
+        "description": "List of instruments ranked according to the selected category."
+      },
+      "TopInstrumentsResponse": {
+        "type": "object",
+        "properties": {
+          "exchangeSegment": {
+            "type": "string",
+            "description": "Exchange segment for which the instruments were fetched."
+          },
+          "category": {
+            "type": "string",
+            "description": "Ranking category applied to the result."
+          },
+          "data": {
+            "type": "array",
+            "description": "List of instruments ranked according to the selected category.",
+            "items": {
+              "$ref": "#/components/schemas/TopInstrumentDetail"
+            }
+          }
+        }
+      },
+      "FundamentalMetricsRequest": {
+        "required": [
+          "exchangeSegment",
+          "instrument",
+          "metrics",
+          "securityId"
+        ],
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "pattern": "\\d+",
+            "type": "string",
+            "description": "Exchange standard ID for each security  \n For eg. \"1333\""
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "| **Enums** | **Exchange** | **Segment**  |\n|-----------|--------------|--------------|\n| NSE_EQ    | NSE          | Equity Cash  |\n| BSE_EQ    | BSE          | Equity Cash  |",
+            "enum": [
+              "NSE_EQ",
+              "BSE_EQ"
+            ]
+          },
+          "instrument": {
+            "type": "string",
+            "description": "| **Enums** | **Description** |\n|-----------|------------------|\n| EQUITY    | Equity           |",
+            "enum": [
+              "EQUITY"
+            ]
+          },
+          "metrics": {
+            "maxItems": 2147483647,
+            "minItems": 1,
+            "type": "array",
+            "example": [
+              "CO"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Array of metric section keys to return. Minimum one section key is required.  \n| **Identifier** | **Description**                                                                                    |\n|-----------------|-----------------------------------------------------------------------------------------------------|\n| CO              | Company overview and market snapshot — Market Cap, Industry, Sector, Dividend Yield, EPS, EBITDA, 52-Week High/Low, Book Value |\n| RATIOS          | Snapshot of company and industry fundamentals — PE Ratio, PB Ratio, Debt to Equity, ROE, ROCE and industry benchmarks |\n| SHP             | Latest shareholding data — Promoter, DII, FII and Public/Retail Holding %                          |",
+              "enum": [
+                "CO",
+                "RATIOS",
+                "SHP"
+              ]
+            }
+          }
+        }
+      },
+      "FundamentalMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "securityId": {
+            "type": "string",
+            "description": "Echoed from request"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "description": "Single-element array containing the isin and requested section blocks.  \n\n**Response Parameters — CO (Company Overview)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| MARKET_CAP | String | Market capitalisation in Rs Cr. | 36318.4 |\n| INDUSTRY | String | Specific industry in which the company operates. | Cement |\n| SECTOR | String | Broad economic sector to which the company belongs. | Construction |\n| DIVIDEND_YIELD | String | Annual dividend per share as a percentage of the current market price. | 0.21 |\n| EPS | String | Earnings attributable to each outstanding equity share, based on the trailing twelve months. | 60.7 |\n| EBITDA | String | Earnings before interest, tax, depreciation, and amortisation for the trailing twelve months, in ₹ crore. | 3278 |\n| BOOK_VALUE | String | Latest book value per equity share, in ₹. | 958.52 |\n| FIFTY_TWO_WEEK_HIGH | String | Highest price at which the security traded during the previous 52 weeks. | 1245 |\n| FIFTY_TWO_WEEK_LOW | String | Lowest price at which the security traded during the previous 52 weeks. | 865.5 |\n\n**Response Parameters — RATIOS (Return Ratios)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| PE_RATIO | String | Price-to-Earnings ratio of the company based on trailing twelve-month earnings. | 31.2 |\n| PB_RATIO | String | Price-to-Book ratio of the company. | 2.01 |\n| DEBT_TO_EQUITY | String | Ratio of the company's total debt to shareholders' equity. | 0.65 |\n| PE_TO_SECTOR_PE | String | Ratio of the company's PE ratio to the average PE ratio of its sector. | 0.82 |\n| ROE | String | Return on Equity, indicating how efficiently the company generates profit using shareholders' equity, expressed as a percentage. | 3.99 |\n| ROCE | String | Return on Capital Employed, indicating how efficiently the company generates operating profit using the capital employed, expressed as a percentage. | 4.86 |\n| INDUSTRY_EPS | String | Average earnings per share of companies operating in the same industry. | 42.6 |\n| INDUSTRY_DEBT_TO_EQUITY | String | Average debt-to-equity ratio of companies operating in the same industry. | 0.85 |\n| INDUSTRY_PB_RATIO | String | Average price-to-book ratio of companies operating in the same industry. | 4.2 |\n| INDUSTRY_CURRENT_RATIO | String | Average current ratio of companies operating in the same industry. | 1.75 |\n| INDUSTRY_DIVIDEND_YIELD | String | Average dividend yield of companies operating in the same industry, expressed as a percentage. | 1.4 |\n| INDUSTRY_OPERATING_MARGIN | String | Average operating profit margin of companies operating in the same industry, expressed as a percentage. | 18.6 |\n\n**Response Parameters — SHP (Shareholding Pattern)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| REPORTING_PERIOD | String | Latest quarter for which shareholding data is reported, in YYYYMM format. | 202603 |\n| PROMOTER_HOLDING | String | Percentage of the company's total shares held by promoters and the promoter group. | 55.84 |\n| DII_HOLDING | String | Percentage of the company's total shares held by domestic institutional investors. | 20.25 |\n| CHANGE_IN_DII_HOLDING | String | Change in DII holding compared with the previous reported quarter, in percentage points. | 1.26 |\n| FII_HOLDING | String | Percentage of the company's total shares held by foreign institutional investors. | 7.15 |\n| CHANGE_IN_FII_HOLDING | String | Change in FII holding compared with the previous reported quarter, in percentage points. | -0.77 |\n| PUBLIC_HOLDING | String | Percentage of the company's total shares held by public or retail shareholders. | 8.06 |"
+            },
+            "description": "Single-element array containing the isin and requested section blocks.  \n\n**Response Parameters — CO (Company Overview)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| MARKET_CAP | String | Market capitalisation in Rs Cr. | 36318.4 |\n| INDUSTRY | String | Specific industry in which the company operates. | Cement |\n| SECTOR | String | Broad economic sector to which the company belongs. | Construction |\n| DIVIDEND_YIELD | String | Annual dividend per share as a percentage of the current market price. | 0.21 |\n| EPS | String | Earnings attributable to each outstanding equity share, based on the trailing twelve months. | 60.7 |\n| EBITDA | String | Earnings before interest, tax, depreciation, and amortisation for the trailing twelve months, in ₹ crore. | 3278 |\n| BOOK_VALUE | String | Latest book value per equity share, in ₹. | 958.52 |\n| FIFTY_TWO_WEEK_HIGH | String | Highest price at which the security traded during the previous 52 weeks. | 1245 |\n| FIFTY_TWO_WEEK_LOW | String | Lowest price at which the security traded during the previous 52 weeks. | 865.5 |\n\n**Response Parameters — RATIOS (Return Ratios)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| PE_RATIO | String | Price-to-Earnings ratio of the company based on trailing twelve-month earnings. | 31.2 |\n| PB_RATIO | String | Price-to-Book ratio of the company. | 2.01 |\n| DEBT_TO_EQUITY | String | Ratio of the company's total debt to shareholders' equity. | 0.65 |\n| PE_TO_SECTOR_PE | String | Ratio of the company's PE ratio to the average PE ratio of its sector. | 0.82 |\n| ROE | String | Return on Equity, indicating how efficiently the company generates profit using shareholders' equity, expressed as a percentage. | 3.99 |\n| ROCE | String | Return on Capital Employed, indicating how efficiently the company generates operating profit using the capital employed, expressed as a percentage. | 4.86 |\n| INDUSTRY_EPS | String | Average earnings per share of companies operating in the same industry. | 42.6 |\n| INDUSTRY_DEBT_TO_EQUITY | String | Average debt-to-equity ratio of companies operating in the same industry. | 0.85 |\n| INDUSTRY_PB_RATIO | String | Average price-to-book ratio of companies operating in the same industry. | 4.2 |\n| INDUSTRY_CURRENT_RATIO | String | Average current ratio of companies operating in the same industry. | 1.75 |\n| INDUSTRY_DIVIDEND_YIELD | String | Average dividend yield of companies operating in the same industry, expressed as a percentage. | 1.4 |\n| INDUSTRY_OPERATING_MARGIN | String | Average operating profit margin of companies operating in the same industry, expressed as a percentage. | 18.6 |\n\n**Response Parameters — SHP (Shareholding Pattern)**\n\n| **Parameters** | **Data Type** | **Description** | **Sample value** |\n|-----------------|----------------|-------------------|--------------------|\n| REPORTING_PERIOD | String | Latest quarter for which shareholding data is reported, in YYYYMM format. | 202603 |\n| PROMOTER_HOLDING | String | Percentage of the company's total shares held by promoters and the promoter group. | 55.84 |\n| DII_HOLDING | String | Percentage of the company's total shares held by domestic institutional investors. | 20.25 |\n| CHANGE_IN_DII_HOLDING | String | Change in DII holding compared with the previous reported quarter, in percentage points. | 1.26 |\n| FII_HOLDING | String | Percentage of the company's total shares held by foreign institutional investors. | 7.15 |\n| CHANGE_IN_FII_HOLDING | String | Change in FII holding compared with the previous reported quarter, in percentage points. | -0.77 |\n| PUBLIC_HOLDING | String | Percentage of the company's total shares held by public or retail shareholders. | 8.06 |"
+          }
+        },
+        "example": {
+          "securityId": "1333",
+          "data": {
+            "CO": {
+              "MARKET_CAP": 36318.4,
+              "INDUSTRY": "Refineries",
+              "SECTOR": "Energy",
+              "DIVIDEND_YIELD": 0.35,
+              "EPS": 42.5,
+              "EBITDA": 1611.8,
+              "BOOK_VALUE": 512.3,
+              "FIFTY_TWO_WEEK_HIGH": 1611.8,
+              "FIFTY_TWO_WEEK_LOW": 1249.8
+            },
+            "RATIOS": {
+              "PE_RATIO": 5.54,
+              "PB_RATIO": 0.7271,
+              "DEBT_TO_EQUITY": 0,
+              "PE_TO_SECTOR_PE": 0.5426,
+              "ROE": 12.4,
+              "ROCE": 14.8,
+              "INDUSTRY_EPS": 38.1,
+              "INDUSTRY_DEBT_TO_EQUITY": 0.42,
+              "INDUSTRY_PB_RATIO": 1.1,
+              "INDUSTRY_CURRENT_RATIO": 1.6,
+              "INDUSTRY_DIVIDEND_YIELD": 0.9,
+              "INDUSTRY_OPERATING_MARGIN": 18.2
+            },
+            "SHP": {
+              "REPORTING_PERIOD": "30-06-2026",
+              "PROMOTER_HOLDING": 50.35,
+              "DII_HOLDING": 15.2,
+              "CHANGE_IN_DII_HOLDING": 0.4,
+              "FII_HOLDING": 22.1,
+              "CHANGE_IN_FII_HOLDING": -0.3,
+              "PUBLIC_HOLDING": 12.35
+            }
           }
         }
       },
@@ -3721,6 +5351,179 @@
             "description": "List of orders to execute when alert is triggered",
             "items": {
               "$ref": "#/components/schemas/AlertOrder"
+            }
+          }
+        }
+      },
+      "MultiOrderItemRequest": {
+        "required": [
+          "exchangeSegment",
+          "sequence",
+          "transactionType"
+        ],
+        "type": "object",
+        "properties": {
+          "sequence": {
+            "type": "string",
+            "description": "Sequence number to identify order in the batch"
+          },
+          "correlationId": {
+            "maxLength": 30,
+            "minLength": 0,
+            "type": "string",
+            "description": "The user/partner generated id for tracking back"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Signifies the type of transaction whether it's BUY or SELL",
+            "enum": [
+              "BUY",
+              "SELL"
+            ]
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "Exchange segment for the order",
+            "enum": [
+              "NSE_EQ",
+              "NSE_FNO",
+              "NSE_COMM",
+              "BSE_EQ",
+              "BSE_FNO",
+              "MCX_COMM"
+            ]
+          },
+          "productType": {
+            "type": "string",
+            "description": "Product type for the order",
+            "enum": [
+              "CNC",
+              "INTRADAY",
+              "MARGIN",
+              "MTF"
+            ]
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type for the order",
+            "enum": [
+              "LIMIT",
+              "MARKET",
+              "STOP_LOSS",
+              "STOP_LOSS_MARKET"
+            ]
+          },
+          "validity": {
+            "type": "string",
+            "description": "Validity of the order",
+            "enum": [
+              "DAY",
+              "IOC"
+            ]
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "quantity": {
+            "type": "integer",
+            "description": "Number of shares or lots",
+            "format": "int32"
+          },
+          "afterMarketOrder": {
+            "type": "boolean",
+            "description": "Flag to inform that the order placed is After Market Order"
+          },
+          "amoTime": {
+            "type": "string",
+            "description": "Flag to inform after what time AMO is pumped",
+            "enum": [
+              "OPEN",
+              "OPEN_30",
+              "OPEN_60",
+              "PRE_OPEN"
+            ]
+          },
+          "price": {
+            "type": "number",
+            "description": "Price at which the order is requested to execute",
+            "format": "float"
+          },
+          "triggerPrice": {
+            "type": "number",
+            "description": "Price at which the order is triggered",
+            "format": "float"
+          },
+          "disclosedQuantity": {
+            "type": "integer",
+            "description": "Number shares visible in the market depth",
+            "format": "int32"
+          }
+        },
+        "description": "List of orders to place"
+      },
+      "MultiOrderRequest": {
+        "required": [
+          "dhanClientId",
+          "orders"
+        ],
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "algoId": {
+            "type": "string",
+            "description": "Optional algo identifier"
+          },
+          "orders": {
+            "type": "array",
+            "description": "List of orders to place",
+            "items": {
+              "$ref": "#/components/schemas/MultiOrderItemRequest"
+            }
+          }
+        }
+      },
+      "MultiOrderItemResponse": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "description": "Order specific identification generated by Dhan"
+          },
+          "sequence": {
+            "type": "string",
+            "description": "Sequence number to identify order in the batch"
+          },
+          "orderStatus": {
+            "type": "string",
+            "description": "Status of the order",
+            "enum": [
+              "TRANSIT",
+              "PENDING",
+              "REJECTED",
+              "CANCELLED",
+              "PART_TRADED",
+              "TRADED",
+              "EXPIRED",
+              "MODIFIED",
+              "TRIGGERED",
+              "INACTIVE"
+            ]
+          }
+        },
+        "description": "List of order responses"
+      },
+      "MultiOrderResponse": {
+        "type": "object",
+        "properties": {
+          "orders": {
+            "type": "array",
+            "description": "List of order responses",
+            "items": {
+              "$ref": "#/components/schemas/MultiOrderItemResponse"
             }
           }
         }
@@ -4643,6 +6446,24 @@
           "secondaryIP": {
             "type": "string",
             "description": "Secondary IP address associated with the user"
+          },
+          "detectedIP": {
+            "type": "string",
+            "description": "Detected client IP address "
+          },
+          "ipMatchStatus": {
+            "type": "string",
+            "description": "| **Enum**        | **Description**                              |\n|-----------------|----------------------------------------------|\n| PRIMARY_MATCH   | Matches primary IP                           |\n| SECONDARY_MATCH | Matches secondary IP                         |\n| MISMATCH        | No match found                              |\n| NOT_CONFIGURED  | No IP configured                            |",
+            "enum": [
+              "PRIMARY_MATCH",
+              "SECONDARY_MATCH",
+              "MISMATCH",
+              "NOT_CONFIGURED"
+            ]
+          },
+          "ordersAllowed": {
+            "type": "boolean",
+            "description": "Flag indicating whether order placement is allowed based on IP match"
           }
         }
       },
@@ -4714,6 +6535,358 @@
           "lastTradedPrice": {
             "type": "number",
             "description": "Last Traded Price for the scrip",
+            "format": "float"
+          }
+        }
+      },
+      "InxTradeResponse": {
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Order specific identification generated by Dhan"
+          },
+          "exchangeOrderId": {
+            "type": "string",
+            "description": "Order specific identification generated by Exchange"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Signifies the type of transaction whether it's BUY or SELL"
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "Exchange segment"
+          },
+          "productType": {
+            "type": "string",
+            "description": "Product type"
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type"
+          },
+          "tradingSymbol": {
+            "type": "string",
+            "description": "Exchange standard trading symbol"
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "tradedQuantity": {
+            "type": "number",
+            "description": "Number of shares traded (fractional supported)",
+            "format": "float"
+          },
+          "tradedPrice": {
+            "type": "number",
+            "description": "Price at which trade executed",
+            "format": "float"
+          },
+          "tradeDate": {
+            "type": "string",
+            "description": "Trade date"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "Record create date time"
+          },
+          "exchangeTime": {
+            "type": "string",
+            "description": "Time at which order reached at exchange end"
+          },
+          "orderStatus": {
+            "type": "string",
+            "description": "Trade status"
+          },
+          "brokerage": {
+            "type": "number",
+            "description": "Brokerage charges",
+            "format": "float"
+          },
+          "otherCharges": {
+            "type": "number",
+            "description": "Other fees",
+            "format": "float"
+          },
+          "tradeValue": {
+            "type": "number",
+            "description": "Average trade value",
+            "format": "float"
+          }
+        }
+      },
+      "InxOrderResponse": {
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "orderId": {
+            "type": "string",
+            "description": "Order specific identification generated by Dhan"
+          },
+          "exchangeOrderId": {
+            "type": "string",
+            "description": "Exchange order number"
+          },
+          "correlationId": {
+            "type": "string",
+            "description": "Correlation ID"
+          },
+          "transactionType": {
+            "type": "string",
+            "description": "Transaction type - BUY or SELL"
+          },
+          "exchangeSegment": {
+            "type": "string",
+            "description": "Exchange segment"
+          },
+          "productType": {
+            "type": "string",
+            "description": "Product type"
+          },
+          "orderType": {
+            "type": "string",
+            "description": "Order type - MKT, LMT, SL, SLM, AMT"
+          },
+          "validity": {
+            "type": "string",
+            "description": "Order validity"
+          },
+          "tradingSymbol": {
+            "type": "string",
+            "description": "Trading symbol"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name of the security"
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Number of shares for the order (fractional supported)",
+            "format": "float"
+          },
+          "remainingQuantity": {
+            "type": "number",
+            "description": "Remaining quantity",
+            "format": "float"
+          },
+          "tradedQty": {
+            "type": "number",
+            "description": "Traded quantity",
+            "format": "float"
+          },
+          "price": {
+            "type": "number",
+            "description": "Price at which order is placed",
+            "format": "float"
+          },
+          "triggerPrice": {
+            "type": "number",
+            "description": "Trigger price",
+            "format": "float"
+          },
+          "avgTradedPrice": {
+            "type": "number",
+            "description": "Average traded price",
+            "format": "float"
+          },
+          "orderStatus": {
+            "type": "string",
+            "description": "Order status"
+          },
+          "createTime": {
+            "type": "string",
+            "description": "Order creation time"
+          },
+          "exchangeTime": {
+            "type": "string",
+            "description": "Exchange time"
+          },
+          "updateTime": {
+            "type": "string",
+            "description": "Last update time"
+          },
+          "omsErrorCode": {
+            "type": "string",
+            "description": "OMS error code if any"
+          },
+          "omsErrorDescription": {
+            "type": "string",
+            "description": "OMS error description"
+          },
+          "afterMarketOrder": {
+            "type": "boolean",
+            "description": "After market order flag"
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount for AMT orders",
+            "format": "float"
+          },
+          "lotSize": {
+            "type": "integer",
+            "description": "Lot size",
+            "format": "int32"
+          },
+          "fractionalFlag": {
+            "type": "boolean",
+            "description": "Fractional flag"
+          },
+          "legName": {
+            "type": "string",
+            "description": "Leg name for super orders",
+            "enum": [
+              "ENTRY_LEG",
+              "STOP_LOSS_LEG",
+              "TARGET_LEG",
+              "NA"
+            ]
+          },
+          "childOrders": {
+            "type": "array",
+            "description": "Child legs for super orders",
+            "items": {
+              "$ref": "#/components/schemas/InxOrderResponse"
+            }
+          }
+        }
+      },
+      "InxMarketStatusResponse": {
+        "type": "object",
+        "properties": {
+          "marketCloseTime": {
+            "type": "string",
+            "description": "Market close time"
+          },
+          "marketOpenTime": {
+            "type": "string",
+            "description": "Market open time"
+          },
+          "holidayFlag": {
+            "type": "boolean",
+            "description": "Holiday flag"
+          },
+          "status": {
+            "type": "string",
+            "description": "Market status - open/closed"
+          }
+        }
+      },
+      "InxHoldingResponse": {
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "tradingSymbol": {
+            "type": "string",
+            "description": "Trading symbol"
+          },
+          "displayName": {
+            "type": "string",
+            "description": "Display name of the security"
+          },
+          "securityId": {
+            "type": "string",
+            "description": "Exchange standard identification for each scrip"
+          },
+          "exchange": {
+            "type": "string",
+            "description": "Exchange where the security is listed"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "Quantity held (fractional supported)",
+            "format": "float"
+          },
+          "avgCostPrice": {
+            "type": "number",
+            "description": "Average cost price per share",
+            "format": "float"
+          },
+          "costValue": {
+            "type": "number",
+            "description": "Total cost value",
+            "format": "float"
+          },
+          "currentValue": {
+            "type": "number",
+            "description": "Current market value",
+            "format": "float"
+          },
+          "gainValue": {
+            "type": "number",
+            "description": "Gain/Loss value",
+            "format": "float"
+          },
+          "ltp": {
+            "type": "number",
+            "description": "Last traded price",
+            "format": "float"
+          },
+          "prevClose": {
+            "type": "number",
+            "description": "Previous close price",
+            "format": "float"
+          },
+          "longTermFlag": {
+            "type": "string",
+            "description": "Long term holding flag (S=Short term, N=Not applicable)"
+          },
+          "lastUpdated": {
+            "type": "string",
+            "description": "Last updated timestamp"
+          }
+        }
+      },
+      "InxFundLimitResponse": {
+        "type": "object",
+        "properties": {
+          "dhanClientId": {
+            "type": "string",
+            "description": "User specific identification generated by Dhan"
+          },
+          "availableCash": {
+            "type": "number",
+            "description": "Available cash for trading",
+            "format": "float"
+          },
+          "cashOnAccount": {
+            "type": "number",
+            "description": "Total cash on account",
+            "format": "float"
+          },
+          "actualCash": {
+            "type": "number",
+            "description": "Actual cash balance",
+            "format": "float"
+          },
+          "settledCash": {
+            "type": "number",
+            "description": "Settled cash",
+            "format": "float"
+          },
+          "unsettledCash": {
+            "type": "number",
+            "description": "Unsettled cash",
+            "format": "float"
+          },
+          "marginUtilized": {
+            "type": "number",
+            "description": "Margin utilized",
             "format": "float"
           }
         }
