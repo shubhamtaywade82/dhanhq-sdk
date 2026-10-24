@@ -19,5 +19,38 @@ export type GetIPDetailsResponse = {
      * Secondary IP address associated with the user
      */
     secondaryIP?: string;
+    /**
+     * Detected client IP address
+     */
+    detectedIP?: string;
+    /**
+     * | **Enum**        | **Description**                              |
+     * |-----------------|----------------------------------------------|
+     * | PRIMARY_MATCH   | Matches primary IP                           |
+     * | SECONDARY_MATCH | Matches secondary IP                         |
+     * | MISMATCH        | No match found                              |
+     * | NOT_CONFIGURED  | No IP configured                            |
+     */
+    ipMatchStatus?: GetIPDetailsResponse.ipMatchStatus;
+    /**
+     * Flag indicating whether order placement is allowed based on IP match
+     */
+    ordersAllowed?: boolean;
 };
+export namespace GetIPDetailsResponse {
+    /**
+     * | **Enum**        | **Description**                              |
+     * |-----------------|----------------------------------------------|
+     * | PRIMARY_MATCH   | Matches primary IP                           |
+     * | SECONDARY_MATCH | Matches secondary IP                         |
+     * | MISMATCH        | No match found                              |
+     * | NOT_CONFIGURED  | No IP configured                            |
+     */
+    export enum ipMatchStatus {
+        PRIMARY_MATCH = 'PRIMARY_MATCH',
+        SECONDARY_MATCH = 'SECONDARY_MATCH',
+        MISMATCH = 'MISMATCH',
+        NOT_CONFIGURED = 'NOT_CONFIGURED',
+    }
+}
 
