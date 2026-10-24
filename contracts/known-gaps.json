@@ -1,0 +1,102 @@
+{
+  "$comment": "Every difference between the pinned openapi.json and the SDK's resource classes, with the reason. spec/known_gaps.spec.ts fails on an unrecorded difference and on a stale entry. specOnly: in Dhan's spec, not implemented. sdkOnly: implemented, not in Dhan's spec.",
+  "specOnly": [],
+  "sdkOnly": [
+    {
+      "operation": "DELETE /globalstocks/orders/{}",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/fundlimit",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/holdings",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/marketstatus",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/orders",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/orders/{}",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/trades",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /globalstocks/trades/{}",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "GET /instrument/{}",
+      "reason": "Documented at dhanhq.co/docs/v2/instruments (segment-wise instrument list); absent from the api-docs spec"
+    },
+    {
+      "operation": "GET /profile",
+      "reason": "Documented at dhanhq.co/docs/v2/authentication (user profile); absent from the api-docs spec"
+    },
+    {
+      "operation": "POST /alerts/multi/orders",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /data/companyinfo",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /data/marketmovers",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /data/newsheadline",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /data/technical",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /globalstocks/margincalculator",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /globalstocks/orders",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /globalstocks/transEstimate",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    },
+    {
+      "operation": "POST /marketfeed/ltp",
+      "reason": "Documented at dhanhq.co/docs/v2/market-quote; absent from the api-docs spec"
+    },
+    {
+      "operation": "POST /marketfeed/ohlc",
+      "reason": "Documented at dhanhq.co/docs/v2/market-quote; absent from the api-docs spec"
+    },
+    {
+      "operation": "POST /marketfeed/quote",
+      "reason": "Documented at dhanhq.co/docs/v2/market-quote; absent from the api-docs spec"
+    },
+    {
+      "operation": "POST /optionchain",
+      "reason": "Documented at dhanhq.co/docs/v2/option-chain; absent from the api-docs spec"
+    },
+    {
+      "operation": "POST /optionchain/expirylist",
+      "reason": "Documented at dhanhq.co/docs/v2/option-chain; absent from the api-docs spec"
+    },
+    {
+      "operation": "PUT /globalstocks/orders/{}",
+      "reason": "In Dhan's live api-docs spec but not in the 2026-03-21 pin; remove this entry when openapi.json is re-pinned"
+    }
+  ]
+}

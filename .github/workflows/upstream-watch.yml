@@ -1,0 +1,124 @@
+# Weekly upstream drift watch.
+#
+# Diffs the pinned openapi.json against the spec Dhan serves live
+# (https://api.dhan.co/v2/v3/api-docs). On drift (operations added or
+# removed, or parameter/body fields changed) it:
+#   1. re-pins openapi.json, regenerates src/generated and runs the gates; a
+#      red known-gaps spec means contracts/known-gaps.json needs updating;
+#   2. opens or updates the candidate PR on branch `upstream-sync/auto`
+#      (never merged automatically) titled feat(api)/fix(api) so
+#      release-please picks the bump;
+#   3. opens or updates the single `upstream-drift` issue.
+#
+# A PR opened with the default GITHUB_TOKEN does not trigger ci.yml, which
+# is why the gates run here. Set the UPSTREAM_SYNC_TOKEN secret (a PAT with
+# contents + pull-requests write) to have normal CI run on the PR as well.
+
+name: Upstream Watch
+
+on:
+  schedule:
+    - cron: '30 3 * * 1' # Monday 09:00 IST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: upstream-watch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    env:
+      # Authenticates the GitHub API call for the official-client commit list.
+      GITHUB_TOKEN: ${{ github.token }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - name: Detect upstream drift and re-pin
+        id: drift
+        run: |
+          set +e
+          npm run --silent upstream:drift -- --out "$RUNNER_TEMP/drift.md" --write
+          code=$?
+          # 1 = drift found, anything else non-zero = the check itself failed.
+          if [ "$code" -ne 0 ] && [ "$code" -ne 1 ]; then exit "$code"; fi
+
+      - name: Regenerate and run gates
+        if: steps.drift.outputs.drifted == 'true'
+        run: |
+          gates="$RUNNER_TEMP/gates.md"
+          logs="$RUNNER_TEMP/gate-logs.md"
+          printf '## Gate results\n\n| Gate | Result |\n|---|---|\n' > "$gates"
+          : > "$logs"
+          # Each gate's own exit code decides the result, never a pipeline's.
+          gate() {
+            local name=$1; shift
+            if "$@" > "$RUNNER_TEMP/gate.log" 2>&1; then
+              echo "| \`$name\` | ✅ |" >> "$gates"
+            else
+              echo "| \`$name\` | ❌ |" >> "$gates"
+              { echo "<details><summary>${name} (last 40 lines)</summary>"; echo; echo '```'
+                tail -n 40 "$RUNNER_TEMP/gate.log"; echo '```'; echo '</details>'; echo; } >> "$logs"
+            fi
+          }
+          gate generate npm run generate
+          gate typecheck npm run typecheck
+          gate lint npm run lint
+          gate test npm test -- --runInBand
+          gate build npm run build
+          {
+            cat "$RUNNER_TEMP/drift.md"; echo; cat "$gates"; echo; cat "$logs"
+            echo '## Before merging'
+            echo
+            echo '- [ ] Review `src/generated` changes: renamed or removed services break `client.generated.*` callers (retitle `feat!:` if so)'
+            echo '- [ ] Update `contracts/known-gaps.json`: drop entries the new spec now covers, record new gaps with a reason'
+            echo '- [ ] Wire new operations into the resource classes, or record them as known gaps'
+            echo '- [ ] Changed fields: update request types and schemas in `src/resources`'
+            echo '- [ ] `CHANGELOG.md` `Unreleased` entry'
+          } > "$RUNNER_TEMP/pr-body.md"
+
+      - name: Ensure upstream-drift label
+        if: steps.drift.outputs.drifted == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh label create upstream-drift --color B60205 --description 'Pinned openapi.json is behind the live DhanHQ spec' --force
+
+      - name: Open or update candidate PR
+        id: pr
+        if: steps.drift.outputs.drifted == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.UPSTREAM_SYNC_TOKEN || github.token }}
+          branch: upstream-sync/auto
+          title: '${{ steps.drift.outputs.type }}(api): re-pin openapi.json to the live DhanHQ spec (automated)'
+          commit-message: '${{ steps.drift.outputs.type }}(api): re-pin openapi.json to the live DhanHQ spec (automated)'
+          body-path: ${{ runner.temp }}/pr-body.md
+          labels: upstream-drift
+
+      - name: Open or update upstream-drift issue
+        if: steps.drift.outputs.drifted == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_URL: ${{ steps.pr.outputs.pull-request-url }}
+        run: |
+          body="$RUNNER_TEMP/issue-body.md"
+          { cat "$RUNNER_TEMP/drift.md"; echo; echo "Candidate re-pin PR: ${PR_URL:-not created}"; } > "$body"
+          number=$(gh issue list --label upstream-drift --state open --json number --jq '.[0].number // empty')
+          if [ -z "$number" ]; then
+            gh issue create --title 'Upstream DhanHQ API drift' --label upstream-drift --body-file "$body"
+          else
+            gh issue edit "$number" --body-file "$body"
+          fi

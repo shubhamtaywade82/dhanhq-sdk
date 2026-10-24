@@ -19,48 +19,51 @@ has to exist.
 
 ## Cutting a release
 
-1. Update `CHANGELOG.md`: move items out of `Unreleased` into a new version
-   heading, and update the link definitions at the bottom.
-2. Bump the version — this commits and tags in one step:
+Releases are automated with
+[release-please](https://github.com/googleapis/release-please)
+(`.github/workflows/release-please.yml`).
 
-   ```bash
-   npm version minor   # or patch / major
-   ```
+1. Merge PRs with [Conventional Commit](https://www.conventionalcommits.org/)
+   titles. The repo squash-merges with the PR title as the commit subject, and
+   `.github/workflows/pr-title.yml` rejects any other title format.
+   - `fix:` → patch, `feat:` → minor, `feat!:` or a `BREAKING CHANGE:` footer → major
+   - `chore:`/`docs:`/`test:`/`ci:`/`refactor:` → no release
+   - a `Release-As: x.y.z` footer overrides the computed version
+2. release-please keeps one `chore: release x.y.z` PR open that bumps
+   `package.json` and `package-lock.json`.
+3. On that PR's branch, update `CHANGELOG.md`: move items out of `Unreleased`
+   into the new version heading, and update the link definitions at the bottom.
+   release-please does not write the changelog (`skip-changelog`).
+4. Merge the release PR — **this publishes to npm**. release-please tags
+   `vX.Y.Z`, creates the GitHub Release, and calls `publish.yml`, which
+   typechecks, tests and builds before `npm publish`. (A tag or release created
+   with the workflow token cannot trigger `publish.yml` by itself, so the
+   release-please workflow calls it directly.)
 
-3. Push the commit and its tag — **this publishes to npm**:
+### Manual release (fallback)
 
-   ```bash
-   git push --follow-tags
-   ```
-
-   `.github/workflows/publish.yml` runs on a pushed `v*` tag *and* on a
-   published GitHub Release; it typechecks, tests and builds before
-   `npm publish`.
-
-4. Add a GitHub Release for the tag with the CHANGELOG section as notes. Its
-   own publish run then fails with "cannot publish over the previously
-   published version" — expected, the package is already out.
-
-### When the version was bumped in a pull request
-
-If `package.json`, `package-lock.json` and the `CHANGELOG.md` heading were
-already moved to the new version in a PR, do **not** run `npm version` (it would
-bump again). Tag the PR's merge commit on `main` — a lightweight `vX.Y.Z` tag,
-as for `v1.0.0`–`v1.2.0` — which publishes:
-
-```bash
-git fetch origin
-git tag v1.3.0 <merge-commit-sha>
-git push origin v1.3.0
-```
-
-From the browser instead: *Releases → Draft a new release*, type the new tag
-`v1.3.0`, set **Target** to the merge commit (or a branch pointing at it — not
-`main` if `main` has moved on), paste the CHANGELOG section and publish. That
-creates the tag and publishes in one step.
+`publish.yml` still runs on a pushed `v*` tag and on a GitHub Release
+published from the browser. If you release by hand, bump
+`.release-please-manifest.json` to the same version so release-please does
+not propose it again.
 
 `workflow_dispatch` on the same workflow can publish manually, including under
 a non-`latest` dist-tag for prereleases.
+
+## Upstream drift
+
+`.github/workflows/upstream-watch.yml` runs every Monday 09:00 IST and diffs
+`openapi.json` against the spec Dhan serves live
+(`https://api.dhan.co/v2/v3/api-docs`); `npm run upstream:drift` runs the same
+check locally. On drift it re-pins, regenerates `src/generated`, runs the
+gates, and opens a PR on `upstream-sync/auto` titled `feat(api)` (operations
+added or removed) or `fix(api)` (fields changed). It also opens or updates one
+`upstream-drift` issue.
+
+`contracts/known-gaps.json` records every difference between the pinned spec
+and the SDK's resource classes, with a reason; `spec/known_gaps.spec.ts`
+fails on an unrecorded difference or a stale entry.
+`contracts/openapi-pin.json` records the pin's source, date and sha256.
 
 ## Publishing from a laptop
 

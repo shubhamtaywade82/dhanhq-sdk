@@ -6,6 +6,9 @@ on:
   push:
     tags:
       - "v*"
+  # Called by release-please.yml after it creates a release: a tag or release
+  # created with GITHUB_TOKEN triggers neither of the events above.
+  workflow_call:
   workflow_dispatch:
     inputs:
       tag:
