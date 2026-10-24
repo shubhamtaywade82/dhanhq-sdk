@@ -1,5 +1,5 @@
 import type { InstrumentSubscription } from "../types/common.types";
-import type { DhanWSOptions, MarketTickerEvent, MarketQuoteEvent, MarketFullEvent } from "../types/ws.types";
+import type { DhanWSOptions, Logger, MarketTickerEvent, MarketQuoteEvent, MarketFullEvent } from "../types/ws.types";
 import { DhanWS } from "./DhanWS";
 import type { MarketFeedEvent } from "../types/ws.types";
 import { GreeksCalculator, type TickWithGreeks } from "../analytics/GreeksCalculator";
@@ -89,11 +89,13 @@ export class WebSocketManager {
   private reconnectAttempts = 0;
   private maxReconnectDelayMs: number;
   private isReconnecting = false;
+  private readonly logger?: Logger;
 
   constructor(config: WebSocketManagerConfig) {
     this.maxInstrumentsPerBatch = config.maxInstrumentsPerBatch ?? 4000;
     this.enableGreeksCalculation = config.enableGreeksCalculation ?? false;
     this.maxReconnectDelayMs = config.maxReconnectDelayMs ?? 30000;
+    this.logger = config.logger;
 
     if (this.enableGreeksCalculation) {
       this.greeksCalculator = new GreeksCalculator({
@@ -281,9 +283,7 @@ export class WebSocketManager {
       this.maxReconnectDelayMs,
     );
 
-    console.log(
-      `[WebSocketManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`,
-    );
+    this.logger?.info(`[WebSocketManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`);
 
     await new Promise((resolve) => setTimeout(resolve, delay));
 
@@ -297,7 +297,7 @@ export class WebSocketManager {
         this.dhanWS.subscribe(batch);
       }
 
-      console.log(
+      this.logger?.info(
         `[WebSocketManager] Reconnected and restored ${this.subscribedInstruments.length} subscriptions`,
       );
       this.reconnectAttempts = 0;

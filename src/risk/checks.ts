@@ -1,6 +1,6 @@
 import { MARKET_HOURS, ProductType } from "../constants";
 import { RiskViolationError } from "../errors";
-import type { RiskCheck, RiskContext, RiskFunds, RiskPosition } from "./types";
+import type { RiskCheck, RiskFunds, RiskPosition } from "./types";
 
 /** Blocks instruments the exchange has flagged as not tradable. */
 export const tradingPermissionCheck: RiskCheck = {

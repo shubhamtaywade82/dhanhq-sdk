@@ -1,4 +1,4 @@
-import type { MarketTickerEvent, MarketQuoteEvent, MarketFullEvent, MarketFeedEvent } from "../types/ws.types";
+import type { MarketTickerEvent, MarketQuoteEvent, MarketFullEvent } from "../types/ws.types";
 import type { Greeks, OptionKind } from "../analytics/blackScholes";
 import { greeks as calculateGreeks, yearsToExpiry } from "../analytics/blackScholes";
 

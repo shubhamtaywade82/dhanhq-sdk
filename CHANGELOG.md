@@ -6,6 +6,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `WebSocketManager` sends its reconnect messages to the `logger` you pass
+  in its options, instead of always printing them with `console.log`.
+  Without a logger it is now silent, like the other WebSocket classes.
+  Reconnect failures still go to `console.error`.
+
+### Changed
+
+- Lint is clean (it had 57 warnings) and `npm run lint` now fails on any
+  warning (`--max-warnings 0`), in CI and in the pre-commit hook.
+  `src/generated` is excluded from lint, because `npm run generate` rewrites
+  it.
+
 ## [2.0.0] - 2026-10-24
 
 ### Changed
