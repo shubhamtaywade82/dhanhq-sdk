@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Weekly upstream drift watch.** `npm run upstream:drift` diffs
+  `openapi.json` against the spec Dhan serves live
+  (`https://api.dhan.co/v2/v3/api-docs`): operations added or removed, and
+  parameter or request-body field changes. It exits 1 on drift.
+  `.github/workflows/upstream-watch.yml` runs it every Monday at 09:00 IST,
+  re-pins, regenerates `src/generated`, runs the gates, and opens a PR plus an
+  `upstream-drift` issue. The report also lists `dhan-oss/DhanHQ-py` commits
+  and links the release notes.
+- **Known-gaps gate.** `contracts/known-gaps.json` plus
+  `spec/known_gaps.spec.ts` record every difference between the pinned spec
+  and the SDK, with a reason. `contracts/openapi-pin.json` records the pin's
+  sha256.
+- **Automated versioning with release-please.** Conventional Commit PR
+  titles drive the bump. Merging the release PR tags the version, creates
+  the GitHub release and publishes. See `docs/RELEASING.md`.
+
 ## [1.3.0] - 2026-10-11
 
 ### Added
