@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-24
+
 ### Changed
 
 - **BREAKING:** `openapi.json` is re-pinned to the live DhanHQ spec
@@ -497,7 +499,8 @@ First release published to npm, as `@shubhamtaywade82/dhanhq-ts`.
 Initial pre-release: REST resources, contracts, WebSocket market feed and
 order updates, auth helpers, and the OpenAPI-generated transport layer.
 
-[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.3.0...v2.0.0
 [1.3.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shubhamtaywade82/dhanhq-sdk/compare/v1.0.0...v1.1.0
