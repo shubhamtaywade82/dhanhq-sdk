@@ -35,7 +35,8 @@ export interface OpenPosition {
   entryFee: number;
 }
 
-export type BacktestExitReason = "stop_loss" | "target" | "signal" | "end_of_data";
+export type BacktestExitReason =
+  "stop_loss" | "target" | "signal" | "end_of_data";
 
 export interface ClosedTrade extends OpenPosition {
   exitPrice: number;
@@ -143,7 +144,11 @@ export type Strategy = (context: StrategyContext) => StrategySignal;
 
 export interface CostModel {
   /** Returns the adjusted fill price (not a delta) for a fill going `direction`. */
-  slippage?(rawPrice: number, direction: FillDirection, quantity: number): number;
+  slippage?(
+    rawPrice: number,
+    direction: FillDirection,
+    quantity: number,
+  ): number;
   /** Charged on both the entry and the exit leg; summed into `ClosedTrade.fees`. */
   fees?(fillPrice: number, quantity: number): number;
 }

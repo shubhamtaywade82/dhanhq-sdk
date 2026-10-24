@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { fromDateString, getMarketSessionInfo, toIstDateString } from "../ta/marketCalendar";
+import {
+  fromDateString,
+  getMarketSessionInfo,
+  toIstDateString,
+} from "../ta/marketCalendar";
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -32,10 +36,18 @@ export const intradayChartsSchema = z
       "FUTCOM",
       "OPTFUT",
     ]),
-    interval: z.enum(["1", "5", "15", "25", "60"]).or(z.number().transform(String)),
+    interval: z
+      .enum(["1", "5", "15", "25", "60"])
+      .or(z.number().transform(String)),
     oi: z.boolean().optional(),
-    fromDate: z.string().regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format").optional(),
-    toDate: z.string().regex(DATE_REGEX, "toDate must be YYYY-MM-DD format").optional(),
+    fromDate: z
+      .string()
+      .regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format")
+      .optional(),
+    toDate: z
+      .string()
+      .regex(DATE_REGEX, "toDate must be YYYY-MM-DD format")
+      .optional(),
   })
   .superRefine((val, ctx) => {
     const todayIst = toIstDateString();
@@ -67,10 +79,7 @@ export const intradayChartsSchema = z
       }
 
       const session = getMarketSessionInfo();
-      if (
-        val.toDate === todayIst &&
-        !session.isTradingDay
-      ) {
+      if (val.toDate === todayIst && !session.isTradingDay) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `toDate (${val.toDate}) is today, but today is a non-trading day (weekend/holiday). Last active session was ${session.lastCompletedTradingDay}`,
@@ -102,7 +111,9 @@ export const historicalChartsSchema = z
       "FUTCOM",
       "OPTFUT",
     ]),
-    fromDate: z.string().regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
+    fromDate: z
+      .string()
+      .regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
     toDate: z.string().regex(DATE_REGEX, "toDate must be YYYY-MM-DD format"),
   })
   .superRefine((val, ctx) => {

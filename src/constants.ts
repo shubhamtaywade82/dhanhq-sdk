@@ -403,7 +403,9 @@ export const GLOBAL_LEG_NAMES = [
 ] as const;
 
 /** Global Stocks order types that require a limit price. */
-export const GLOBAL_PRICED_ORDER_TYPES = [GlobalStocks.OrderType.LIMIT] as const;
+export const GLOBAL_PRICED_ORDER_TYPES = [
+  GlobalStocks.OrderType.LIMIT,
+] as const;
 
 /** Global Stocks order types that require a trigger price. */
 export const GLOBAL_TRIGGERED_ORDER_TYPES = [

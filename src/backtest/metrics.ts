@@ -12,7 +12,12 @@ export function computeMetrics(
 
   const grossProfit = wins.reduce((sum, trade) => sum + trade.pnl, 0);
   const grossLoss = Math.abs(losses.reduce((sum, trade) => sum + trade.pnl, 0));
-  const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? Infinity : 0) : grossProfit / grossLoss;
+  const profitFactor =
+    grossLoss === 0
+      ? grossProfit > 0
+        ? Infinity
+        : 0
+      : grossProfit / grossLoss;
 
   return {
     totalTrades,
@@ -24,7 +29,10 @@ export function computeMetrics(
   };
 }
 
-function computeMaxDrawdown(equityCurve: EquityPoint[], initialCapital: number): number {
+function computeMaxDrawdown(
+  equityCurve: EquityPoint[],
+  initialCapital: number,
+): number {
   let peak = initialCapital;
   let maxDrawdown = 0;
 
@@ -63,7 +71,8 @@ function computeSharpe(equityCurve: EquityPoint[]): number | null {
 
   const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
   const variance =
-    returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / (returns.length - 1);
+    returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) /
+    (returns.length - 1);
   const stdDev = Math.sqrt(variance);
 
   return stdDev === 0 ? null : (mean / stdDev) * Math.sqrt(returns.length);

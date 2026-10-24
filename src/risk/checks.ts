@@ -83,7 +83,10 @@ export const quantityCheck: RiskCheck = {
     const quantity = Number(args.quantity ?? 0);
 
     if (!Number.isFinite(quantity) || quantity <= 0) {
-      throw new RiskViolationError("quantity", "Quantity must be greater than 0");
+      throw new RiskViolationError(
+        "quantity",
+        "Quantity must be greater than 0",
+      );
     }
 
     // Size caps bound new exposure; an exit up to the open position is allowed.
@@ -174,13 +177,15 @@ export const concentrationCheck: RiskCheck = {
       .reduce(
         (total, position) =>
           total +
-          Math.abs(Number(position.netQty ?? 0)) * Number(position.costPrice ?? 0),
+          Math.abs(Number(position.netQty ?? 0)) *
+            Number(position.costPrice ?? 0),
         0,
       );
 
     // The order's own notional counts when it carries a price (LIMIT / SL, or
     // the trigger of SL-M); a plain MARKET order adds what it cannot price.
-    const orderPrice = Number(args.price ?? 0) || Number(args.triggerPrice ?? 0);
+    const orderPrice =
+      Number(args.price ?? 0) || Number(args.triggerPrice ?? 0);
     const orderNotional = Number(args.quantity ?? 0) * orderPrice;
     const concentration = ((exposure + orderNotional) / available) * 100;
     if (concentration > limits.maxConcentrationPct) {
@@ -206,7 +211,9 @@ export const maxLossCheck: RiskCheck = {
     const positions = await provider.positions();
     const dayPnl = positions.reduce(
       (total, position) =>
-        total + Number(position.realizedProfit ?? 0) + Number(position.unrealizedProfit ?? 0),
+        total +
+        Number(position.realizedProfit ?? 0) +
+        Number(position.unrealizedProfit ?? 0),
       0,
     );
 
@@ -279,8 +286,13 @@ export function availableBalance(funds: RiskFunds): number {
  * `OPTSTK`, `FUTIDX`, `EQUITY`, ...). `INSTRUMENT_TYPE` is not usable for this:
  * NSE index and stock options both carry `OP` there.
  */
-export function instrumentKind(instrument?: { instrument?: string; instrumentType?: string }): string {
-  return String(instrument?.instrument ?? instrument?.instrumentType ?? "").toUpperCase();
+export function instrumentKind(instrument?: {
+  instrument?: string;
+  instrumentType?: string;
+}): string {
+  return String(
+    instrument?.instrument ?? instrument?.instrumentType ?? "",
+  ).toUpperCase();
 }
 
 /**
@@ -289,18 +301,31 @@ export function instrumentKind(instrument?: { instrument?: string; instrumentTyp
  * sides name one), for no more than that position's size.
  */
 export function isRiskReducing(
-  args: { transactionType?: unknown; quantity?: unknown; securityId?: unknown; exchangeSegment?: unknown; productType?: unknown },
+  args: {
+    transactionType?: unknown;
+    quantity?: unknown;
+    securityId?: unknown;
+    exchangeSegment?: unknown;
+    productType?: unknown;
+  },
   positions: RiskPosition[],
 ): boolean {
   const quantity = Number(args.quantity ?? 0);
   const side = String(args.transactionType ?? "").toUpperCase();
   const securityId = String(args.securityId ?? "");
-  if (!(quantity > 0) || (side !== "BUY" && side !== "SELL") || securityId === "") {
+  if (
+    !(quantity > 0) ||
+    (side !== "BUY" && side !== "SELL") ||
+    securityId === ""
+  ) {
     return false;
   }
 
   const sameOrUnspecified = (wanted: unknown, actual: unknown) =>
-    wanted === undefined || wanted === "" || actual === undefined || String(wanted) === String(actual);
+    wanted === undefined ||
+    wanted === "" ||
+    actual === undefined ||
+    String(wanted) === String(actual);
 
   const position = positions.find(
     (candidate) =>

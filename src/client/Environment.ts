@@ -30,7 +30,12 @@ export const SANDBOX_BASE_URL = "https://sandbox.dhan.co/v2";
  */
 export type RouteClass = "public" | "market_data" | "global_stocks" | "trading";
 
-const MARKET_DATA_PREFIXES = ["/marketfeed/", "/optionchain", "/charts/", "/data/"];
+const MARKET_DATA_PREFIXES = [
+  "/marketfeed/",
+  "/optionchain",
+  "/charts/",
+  "/data/",
+];
 
 /** Strips query strings and a leading `/v2`, so callers can pass either form. */
 export function normalizePath(url: string): string {
@@ -42,7 +47,8 @@ export function routeClassFor(url: string): RouteClass {
   const path = normalizePath(url);
   if (path.startsWith("/instrument/")) return "public";
   if (path.startsWith("/globalstocks")) return "global_stocks";
-  if (MARKET_DATA_PREFIXES.some((prefix) => path.startsWith(prefix))) return "market_data";
+  if (MARKET_DATA_PREFIXES.some((prefix) => path.startsWith(prefix)))
+    return "market_data";
   return "trading";
 }
 
@@ -106,7 +112,9 @@ const SANDBOX_OPERATIONS: ReadonlyArray<readonly [Verb, RegExp]> = [
 export function sandboxSupports(method: string, url: string): boolean {
   const verb = method.toUpperCase();
   const path = normalizePath(url);
-  return SANDBOX_OPERATIONS.some(([opVerb, pattern]) => opVerb === verb && pattern.test(path));
+  return SANDBOX_OPERATIONS.some(
+    ([opVerb, pattern]) => opVerb === verb && pattern.test(path),
+  );
 }
 
 /** Parses a mode from config or `DHAN_MODE`; throws on an unknown value. */
@@ -114,7 +122,9 @@ export function parseMode(value: string | undefined): DhanMode {
   if (value === undefined || value.trim() === "") return "live";
   const mode = value.trim().toLowerCase();
   if (!(DHAN_MODES as readonly string[]).includes(mode)) {
-    throw new Error(`Unknown DHAN_MODE "${value}": expected one of ${DHAN_MODES.join(", ")}`);
+    throw new Error(
+      `Unknown DHAN_MODE "${value}": expected one of ${DHAN_MODES.join(", ")}`,
+    );
   }
   return mode as DhanMode;
 }

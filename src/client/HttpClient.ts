@@ -114,7 +114,10 @@ export class HttpClient {
   ): Promise<TResponse> {
     // Refused before queueing or the circuit breaker: an unsupported sandbox
     // call is a caller error, never sent anywhere — and never to production.
-    if (this.environmentFor(options.url) === "sandbox" && !sandboxSupports(options.method, options.url)) {
+    if (
+      this.environmentFor(options.url) === "sandbox" &&
+      !sandboxSupports(options.method, options.url)
+    ) {
       throw new SandboxUnsupportedError(options.method, options.url);
     }
 
@@ -124,7 +127,11 @@ export class HttpClient {
 
       try {
         if (options.tier) {
-          return await this.rateLimiter.scheduleTier(options.tier, isWrite, execute);
+          return await this.rateLimiter.scheduleTier(
+            options.tier,
+            isWrite,
+            execute,
+          );
         }
 
         if (isWrite) {
@@ -150,7 +157,9 @@ export class HttpClient {
     dependencies: HttpClientDependencies,
   ): CircuitBreaker | undefined {
     if (dependencies.circuitBreaker !== undefined) {
-      return dependencies.circuitBreaker === false ? undefined : dependencies.circuitBreaker;
+      return dependencies.circuitBreaker === false
+        ? undefined
+        : dependencies.circuitBreaker;
     }
 
     if (config.circuitBreaker === false) {
@@ -209,7 +218,10 @@ export class HttpClient {
           );
         }
         if (options.safeToRetry !== true) {
-          throw await this.rejectUnreplayableAfterAuthFailure(options, normalized);
+          throw await this.rejectUnreplayableAfterAuthFailure(
+            options,
+            normalized,
+          );
         }
 
         await this.authResolver.handleTokenExpired(normalized);
@@ -254,18 +266,27 @@ export class HttpClient {
       await this.authResolver.handleTokenExpired(error);
     } catch (renewalError) {
       tokenRenewalError = renewalError;
-      this.logger?.warn("Token renewal failed after 401 on a non-replayable request", {
-        method: options.method,
-        url: options.url,
-        error: renewalError instanceof Error ? renewalError.message : String(renewalError),
-      });
+      this.logger?.warn(
+        "Token renewal failed after 401 on a non-replayable request",
+        {
+          method: options.method,
+          url: options.url,
+          error:
+            renewalError instanceof Error
+              ? renewalError.message
+              : String(renewalError),
+        },
+      );
     }
 
-    this.logger?.warn("401 on non-replayable request; token renewed, request NOT resent", {
-      method: options.method,
-      url: options.url,
-      errorCode: error.errorCode,
-    });
+    this.logger?.warn(
+      "401 on non-replayable request; token renewed, request NOT resent",
+      {
+        method: options.method,
+        url: options.url,
+        errorCode: error.errorCode,
+      },
+    );
 
     return new AuthenticationError(
       `${options.method} ${options.url}`,
@@ -317,7 +338,10 @@ export class HttpClient {
   }
 
   private usesDedicatedSandboxCredentials(url: string): boolean {
-    return this.environmentFor(url) === "sandbox" && this.sandboxAuthResolver !== undefined;
+    return (
+      this.environmentFor(url) === "sandbox" &&
+      this.sandboxAuthResolver !== undefined
+    );
   }
 
   /**
@@ -326,7 +350,10 @@ export class HttpClient {
    * always has been. In `hybrid` they are required: Dhan rejects a production
    * token on the sandbox, so sending one would only fail.
    */
-  private async sandboxCredentials(): Promise<{ token: string; clientId: string }> {
+  private async sandboxCredentials(): Promise<{
+    token: string;
+    clientId: string;
+  }> {
     if (this.sandboxAuthResolver) {
       return {
         token: await this.sandboxAuthResolver.resolveAccessToken(),
@@ -409,22 +436,26 @@ export class HttpClient {
     }
 
     if (error instanceof Bottleneck.BottleneckError) {
-      this.logger?.warn('Rate limit exceeded', {
+      this.logger?.warn("Rate limit exceeded", {
         message: error.message,
-        retryAfterMs: this.extractRetryAfter(error)
+        retryAfterMs: this.extractRetryAfter(error),
       });
-      return new RateLimitError(
-        `Rate limit exceeded: ${error.message}`,
-        { cause: error, retryAfterMs: this.extractRetryAfter(error) }
-      );
+      return new RateLimitError(`Rate limit exceeded: ${error.message}`, {
+        cause: error,
+        retryAfterMs: this.extractRetryAfter(error),
+      });
     }
 
     return new NetworkError("Unexpected request failure", error);
   }
 
-  private extractRetryAfter(error: Bottleneck.BottleneckError): number | undefined {
+  private extractRetryAfter(
+    error: Bottleneck.BottleneckError,
+  ): number | undefined {
     // Extract retry-after information from bottleneck error if available
-    const { retryAfterMs } = error as Bottleneck.BottleneckError & { retryAfterMs?: number };
+    const { retryAfterMs } = error as Bottleneck.BottleneckError & {
+      retryAfterMs?: number;
+    };
     if (retryAfterMs !== undefined) {
       return retryAfterMs;
     }
@@ -447,10 +478,14 @@ export class HttpClient {
    * Reads the standard `Retry-After` header (delay-seconds form — Dhan does
    * not send the HTTP-date form) off a 429 response, in milliseconds.
    */
-  private extractRetryAfterHeader(response: AxiosResponse<unknown>): number | undefined {
+  private extractRetryAfterHeader(
+    response: AxiosResponse<unknown>,
+  ): number | undefined {
     const header = response.headers?.["retry-after"];
     const seconds = Number(Array.isArray(header) ? header[0] : header);
-    return Number.isFinite(seconds) && seconds >= 0 ? seconds * 1000 : undefined;
+    return Number.isFinite(seconds) && seconds >= 0
+      ? seconds * 1000
+      : undefined;
   }
 }
 
@@ -459,11 +494,7 @@ function sleep(ms: number): Promise<void> {
 }
 
 function isAxiosLikeError(error: unknown): error is AxiosError {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "isAxiosError" in error
-  );
+  return typeof error === "object" && error !== null && "isAxiosError" in error;
 }
 
 /**
@@ -471,8 +502,17 @@ function isAxiosLikeError(error: unknown): error is AxiosError {
  * request authenticates with the sandbox client id, so the body must name the
  * same account: a production id is swapped for it; any other value is kept.
  */
-function rebindClientId<TBody>(data: TBody, productionId: string, sandboxId: string): TBody {
-  if (productionId === sandboxId || data === null || typeof data !== "object" || Array.isArray(data)) {
+function rebindClientId<TBody>(
+  data: TBody,
+  productionId: string,
+  sandboxId: string,
+): TBody {
+  if (
+    productionId === sandboxId ||
+    data === null ||
+    typeof data !== "object" ||
+    Array.isArray(data)
+  ) {
     return data;
   }
 

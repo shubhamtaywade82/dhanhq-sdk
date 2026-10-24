@@ -66,7 +66,8 @@ export const RESOURCES: ResourceDefinition[] = [
   {
     uri: "dhanhq://account/positions",
     name: "Open Positions",
-    description: "F&O and equity positions with net quantity and unrealized P&L",
+    description:
+      "F&O and equity positions with net quantity and unrealized P&L",
     mimeType: "application/json",
   },
   {
@@ -78,7 +79,8 @@ export const RESOURCES: ResourceDefinition[] = [
   {
     uri: "dhanhq://market/capabilities",
     name: "Agent Capabilities",
-    description: "Available tools, scopes, risk levels and the write gate state",
+    description:
+      "Available tools, scopes, risk levels and the write gate state",
     mimeType: "application/json",
   },
 ];
@@ -124,7 +126,11 @@ export const PROMPTS: PromptDefinition[] = [
     arguments: [
       { name: "transactionType", description: "BUY or SELL", required: true },
       { name: "securityId", description: "Dhan security id", required: true },
-      { name: "quantity", description: "Number of shares or lots", required: true },
+      {
+        name: "quantity",
+        description: "Number of shares or lots",
+        required: true,
+      },
       {
         name: "exchangeSegment",
         description: "NSE_EQ, NSE_FNO, etc.",
@@ -204,7 +210,11 @@ export class McpServer {
     try {
       request = JSON.parse(line) as JsonRpcRequest;
     } catch (error) {
-      this.respondError(null, ErrorCode.PARSE_ERROR, `Parse error: ${message(error)}`);
+      this.respondError(
+        null,
+        ErrorCode.PARSE_ERROR,
+        `Parse error: ${message(error)}`,
+      );
       return;
     }
 

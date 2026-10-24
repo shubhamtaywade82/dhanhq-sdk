@@ -16,7 +16,9 @@ import type { RawTokenResponse } from "./TokenResponse";
  */
 export interface TokenStore {
   /** The stored payload for this client, or `undefined` when there is none. */
-  load(clientId: string): Promise<RawTokenResponse | undefined> | RawTokenResponse | undefined;
+  load(
+    clientId: string,
+  ): Promise<RawTokenResponse | undefined> | RawTokenResponse | undefined;
   save(clientId: string, raw: RawTokenResponse): Promise<void> | void;
   clear(clientId: string): Promise<void> | void;
 }
@@ -67,12 +69,16 @@ export class FileTokenStore implements TokenStore {
 
   constructor(options: FileTokenStoreOptions = {}) {
     this.directory =
-      options.directory ?? process.env.DHAN_TOKEN_CACHE_DIR ?? join(homedir(), ".dhanhq");
+      options.directory ??
+      process.env.DHAN_TOKEN_CACHE_DIR ??
+      join(homedir(), ".dhanhq");
   }
 
   public pathFor(clientId: string): string {
     if (!CLIENT_ID_PATTERN.test(clientId)) {
-      throw new Error(`FileTokenStore: refusing unsafe client id ${JSON.stringify(clientId)}`);
+      throw new Error(
+        `FileTokenStore: refusing unsafe client id ${JSON.stringify(clientId)}`,
+      );
     }
     return join(this.directory, `dhan-token-${clientId}.json`);
   }
@@ -87,7 +93,11 @@ export class FileTokenStore implements TokenStore {
 
     try {
       const parsed = JSON.parse(text) as Partial<StoredTokenFile>;
-      if (parsed.clientId !== clientId || typeof parsed.token !== "object" || parsed.token === null) {
+      if (
+        parsed.clientId !== clientId ||
+        typeof parsed.token !== "object" ||
+        parsed.token === null
+      ) {
         return undefined;
       }
       return parsed.token;
@@ -100,7 +110,11 @@ export class FileTokenStore implements TokenStore {
     const target = this.pathFor(clientId);
     await fs.mkdir(this.directory, { recursive: true, mode: 0o700 });
 
-    const body: StoredTokenFile = { clientId, savedAt: new Date().toISOString(), token: raw };
+    const body: StoredTokenFile = {
+      clientId,
+      savedAt: new Date().toISOString(),
+      token: raw,
+    };
     const temp = `${target}.${process.pid}.${Date.now()}.tmp`;
     try {
       await fs.writeFile(temp, JSON.stringify(body), { mode: 0o600 });

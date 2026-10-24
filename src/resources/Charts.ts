@@ -7,7 +7,10 @@ import type {
 } from "../generated";
 
 import { HttpClient } from "../client/HttpClient";
-import { historicalChartsSchema, intradayChartsSchema } from "../contracts/charts.schema";
+import {
+  historicalChartsSchema,
+  intradayChartsSchema,
+} from "../contracts/charts.schema";
 import { ValidationError } from "../errors";
 import { adjustTradingDateRange } from "../ta/marketCalendar";
 
@@ -65,9 +68,7 @@ export interface ExtendedHistoricalChartsRequest extends HistoricalChartsInput {
 export class Charts {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public async option(
-    request: OptionChartInput,
-  ): Promise<OptionChartResponse> {
+  public async option(request: OptionChartInput): Promise<OptionChartResponse> {
     return this.httpClient.request<OptionChartResponse, OptionChartInput>({
       method: "POST",
       url: "/charts/rollingoption",

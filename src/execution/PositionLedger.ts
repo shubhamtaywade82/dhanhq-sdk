@@ -41,7 +41,10 @@ export interface PositionExposure {
  * Pure and side-effect-free so every add/reduce/close/flip case is directly
  * testable without a `PositionLedger` instance.
  */
-export function applyFill(existing: LedgerPosition | undefined, fill: Fill): LedgerPosition {
+export function applyFill(
+  existing: LedgerPosition | undefined,
+  fill: Fill,
+): LedgerPosition {
   const base: LedgerPosition = existing ?? {
     exchangeSegment: fill.exchangeSegment,
     securityId: fill.securityId,
@@ -52,7 +55,8 @@ export function applyFill(existing: LedgerPosition | undefined, fill: Fill): Led
   };
 
   const delta = fill.transactionType === "BUY" ? fill.quantity : -fill.quantity;
-  const sameDirection = base.netQuantity === 0 || Math.sign(base.netQuantity) === Math.sign(delta);
+  const sameDirection =
+    base.netQuantity === 0 || Math.sign(base.netQuantity) === Math.sign(delta);
 
   let netQuantity = base.netQuantity;
   let averagePrice = base.averagePrice;
@@ -86,7 +90,13 @@ export function applyFill(existing: LedgerPosition | undefined, fill: Fill): Led
     // cost basis of what remains open doesn't change on a partial reduce.
   }
 
-  return { ...base, netQuantity, averagePrice, realizedPnl, fills: [...base.fills, fill] };
+  return {
+    ...base,
+    netQuantity,
+    averagePrice,
+    realizedPnl,
+    fills: [...base.fills, fill],
+  };
 }
 
 function keyFor(exchangeSegment: string, securityId: string): string {
@@ -152,13 +162,18 @@ export class PositionLedger {
     this.markPrices.set(keyFor(event.exchangeSegment, event.securityId), ltp);
   }
 
-  public position(exchangeSegment: string, securityId: string): LedgerPosition | undefined {
+  public position(
+    exchangeSegment: string,
+    securityId: string,
+  ): LedgerPosition | undefined {
     return this.positions.get(keyFor(exchangeSegment, securityId));
   }
 
   /** Positions with open quantity — excludes symbols that have gone flat. */
   public openPositions(): LedgerPosition[] {
-    return [...this.positions.values()].filter((position) => position.netQuantity !== 0);
+    return [...this.positions.values()].filter(
+      (position) => position.netQuantity !== 0,
+    );
   }
 
   /** Every symbol ever filled, open or flat, so closed-trade `realizedPnl` stays visible. */
@@ -200,7 +215,8 @@ export class PositionLedger {
         netQuantity: position.netQuantity,
         markPrice,
         exposure: exposureValue,
-        unrealizedPnl: (markPrice - position.averagePrice) * position.netQuantity,
+        unrealizedPnl:
+          (markPrice - position.averagePrice) * position.netQuantity,
       });
       total += exposureValue;
     }

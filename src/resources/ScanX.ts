@@ -10,9 +10,18 @@ export interface CompanyInfoRequest {
 
 /** `POST /data/marketmovers` — instruments ranked by OI, volume or price change. */
 export interface MarketMoversRequest {
-  exchangeSegment: "NSE_FNO" | "BSE_FNO" | "NSE_COMM" | "MCX_COMM" | "NSE_EQ" | "BSE_EQ";
-  instrument: Array<"OPTIDX" | "OPTSTK" | "OPTFUT" | "FUTIDX" | "FUTSTK" | "FUTCOM" | "EQUITY">;
-  category: "HIGHEST_OI" | "OI_GAINERS" | "OI_LOSERS" | "TOP_VOLUME" | "PRICE_GAINERS" | "PRICE_LOSERS";
+  exchangeSegment:
+    "NSE_FNO" | "BSE_FNO" | "NSE_COMM" | "MCX_COMM" | "NSE_EQ" | "BSE_EQ";
+  instrument: Array<
+    "OPTIDX" | "OPTSTK" | "OPTFUT" | "FUTIDX" | "FUTSTK" | "FUTCOM" | "EQUITY"
+  >;
+  category:
+    | "HIGHEST_OI"
+    | "OI_GAINERS"
+    | "OI_LOSERS"
+    | "TOP_VOLUME"
+    | "PRICE_GAINERS"
+    | "PRICE_LOSERS";
   /** YYYY-MM-DD; required for option/future instruments. */
   expiry?: string;
   /** Stock universe; applies to EQUITY only (e.g. "NIFTY_50", "FNO_STOCKS"). */
@@ -50,18 +59,27 @@ export interface TechnicalDataRequest {
 export class ScanX {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public async companyInfo<T = unknown>(request: CompanyInfoRequest): Promise<T> {
+  public async companyInfo<T = unknown>(
+    request: CompanyInfoRequest,
+  ): Promise<T> {
     return this.post<T>("/data/companyinfo", request);
   }
 
-  public async marketMovers<T = unknown>(request: MarketMoversRequest): Promise<T> {
-    if (request.limit !== undefined && (request.limit < 1 || request.limit > 100)) {
+  public async marketMovers<T = unknown>(
+    request: MarketMoversRequest,
+  ): Promise<T> {
+    if (
+      request.limit !== undefined &&
+      (request.limit < 1 || request.limit > 100)
+    ) {
       throw new RangeError("marketMovers limit must be between 1 and 100");
     }
     return this.post<T>("/data/marketmovers", request);
   }
 
-  public async newsHeadline<T = unknown>(request: NewsHeadlineRequest): Promise<T> {
+  public async newsHeadline<T = unknown>(
+    request: NewsHeadlineRequest,
+  ): Promise<T> {
     if (request.limit < 1 || request.limit > 50) {
       throw new RangeError("newsHeadline limit must be between 1 and 50");
     }
@@ -71,7 +89,9 @@ export class ScanX {
     });
   }
 
-  public async technical<T = unknown>(request: TechnicalDataRequest): Promise<T> {
+  public async technical<T = unknown>(
+    request: TechnicalDataRequest,
+  ): Promise<T> {
     return this.post<T>("/data/technical", request);
   }
 

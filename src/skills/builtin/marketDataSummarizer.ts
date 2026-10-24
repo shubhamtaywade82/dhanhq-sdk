@@ -13,10 +13,7 @@ import {
 } from "../../resources/OptionChain";
 import { candlesFromSeries, closes } from "../../ta/candles";
 import { latest, rsi, sma } from "../../ta/indicators";
-import {
-  todayOrLastTradingDay,
-  tradingDaysAgo,
-} from "../../ta/marketCalendar";
+import { todayOrLastTradingDay, tradingDaysAgo } from "../../ta/marketCalendar";
 import {
   Skill,
   type SkillContext,
@@ -79,7 +76,10 @@ export class MarketDataSummarizerSkill extends Skill<SummarizerContext> {
     return [
       { name: "resolve_instrument", run: (context) => this.resolve(context) },
       { name: "fetch_technicals", run: (context) => this.technicals(context) },
-      { name: "fetch_option_chain", run: (context) => this.optionChain(context) },
+      {
+        name: "fetch_option_chain",
+        run: (context) => this.optionChain(context),
+      },
       {
         name: "prepare_summary",
         run: (context) => ({
@@ -97,7 +97,9 @@ export class MarketDataSummarizerSkill extends Skill<SummarizerContext> {
   }
 
   /** Indices first, then cash equity, then a broad search. */
-  private async resolve(context: SummarizerContext): Promise<SummarizerContext> {
+  private async resolve(
+    context: SummarizerContext,
+  ): Promise<SummarizerContext> {
     const symbol = String(context.underlyingSymbol).trim().toUpperCase();
 
     const instrument =
@@ -171,7 +173,7 @@ export class MarketDataSummarizerSkill extends Skill<SummarizerContext> {
         sma20: round(latest(sma(closeSeries, 20))),
         sma50: round(latest(sma(closeSeries, 50))),
         rsi14: round(latest(rsi(closeSeries, 14))),
-        return5dPct: previous ? round(((last / previous - 1) * 100)) : null,
+        return5dPct: previous ? round((last / previous - 1) * 100) : null,
         dataPointsAnalyzed: closeSeries.length,
         from: fromDate,
         to: toDate,

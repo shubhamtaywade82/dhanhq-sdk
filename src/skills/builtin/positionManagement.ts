@@ -36,7 +36,10 @@ export class SquareOffAllSkill extends Skill<PositionContext> {
             (position) => Number(position.netQty ?? 0) !== 0,
           );
 
-          return { ...context, positions: open as Array<Record<string, unknown>> };
+          return {
+            ...context,
+            positions: open as Array<Record<string, unknown>>,
+          };
         },
       },
       {
@@ -70,7 +73,8 @@ export class SquareOffAllSkill extends Skill<PositionContext> {
 export class SquareOffPositionSkill extends Skill<PositionContext> {
   public readonly definition: SkillDefinition = {
     name: "square_off_position",
-    description: "Exit a specific open position by symbol and exchange segment.",
+    description:
+      "Exit a specific open position by symbol and exchange segment.",
     risk: "destructive_write",
     scope: "orders:write",
     params: {
@@ -120,9 +124,7 @@ export class SquareOffPositionSkill extends Skill<PositionContext> {
           // is the opposite of the position's sign.
           const result = await context.client.orders.place({
             transactionType: netQuantity > 0 ? "SELL" : "BUY",
-            exchangeSegment: String(
-              position.exchangeSegment,
-            ) as never,
+            exchangeSegment: String(position.exchangeSegment) as never,
             productType: String(position.productType) as never,
             orderType: "MARKET",
             validity: "DAY",

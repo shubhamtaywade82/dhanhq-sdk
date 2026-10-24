@@ -42,7 +42,10 @@ export class DhanAuth {
    * the secret is then as sensitive as the PIN — anything holding both can
    * mint tokens for the account indefinitely.
    */
-  public static generateTotp(secret: string, options: TotpOptions = {}): string {
+  public static generateTotp(
+    secret: string,
+    options: TotpOptions = {},
+  ): string {
     const digits = options.digits ?? 6;
     const period = options.period ?? 30;
     const timestamp = options.timestamp ?? Date.now();

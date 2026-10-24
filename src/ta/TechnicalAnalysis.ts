@@ -67,7 +67,11 @@ export interface TimeframeIndicators {
   ema: number | null;
   vwap: number | null;
   macd: { macd: number | null; signal: number | null; hist: number | null };
-  bollinger: { upper: number | null; middle: number | null; lower: number | null };
+  bollinger: {
+    upper: number | null;
+    middle: number | null;
+    lower: number | null;
+  };
   stochastic: { k: number | null; d: number | null };
   supertrend: { value: number | null; direction: 1 | -1 | null };
   lastClose: number | null;

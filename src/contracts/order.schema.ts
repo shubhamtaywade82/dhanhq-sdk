@@ -14,12 +14,7 @@ export const orderSchema = z
       "MCX_COMM",
     ]),
     productType: z.enum(["CNC", "INTRADAY", "MARGIN", "MTF", "BO", "CO"]),
-    orderType: z.enum([
-      "MARKET",
-      "LIMIT",
-      "STOP_LOSS",
-      "STOP_LOSS_MARKET",
-    ]),
+    orderType: z.enum(["MARKET", "LIMIT", "STOP_LOSS", "STOP_LOSS_MARKET"]),
     validity: z.enum(["DAY", "IOC"]).optional(),
     quantity: z.number().int().positive(),
     disclosedQuantity: z.number().int().nonnegative().optional(),

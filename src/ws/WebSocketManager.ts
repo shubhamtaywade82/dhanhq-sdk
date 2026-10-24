@@ -1,8 +1,17 @@
 import type { InstrumentSubscription } from "../types/common.types";
-import type { DhanWSOptions, Logger, MarketTickerEvent, MarketQuoteEvent, MarketFullEvent } from "../types/ws.types";
+import type {
+  DhanWSOptions,
+  Logger,
+  MarketTickerEvent,
+  MarketQuoteEvent,
+  MarketFullEvent,
+} from "../types/ws.types";
 import { DhanWS } from "./DhanWS";
 import type { MarketFeedEvent } from "../types/ws.types";
-import { GreeksCalculator, type TickWithGreeks } from "../analytics/GreeksCalculator";
+import {
+  GreeksCalculator,
+  type TickWithGreeks,
+} from "../analytics/GreeksCalculator";
 
 /**
  * Configuration for the WebSocket Manager.
@@ -36,14 +45,14 @@ export interface OptionContractMetadata {
 
 /**
  * Enhanced WebSocket Manager with auto-reconnect, batching, and Greeks.
- * 
+ *
  * This wrapper around DhanWS provides:
  * - Automatic instrument batching (max 5000 per subscription)
  * - Exponential backoff reconnection
  * - State restoration (re-subscription after disconnect)
  * - Real-time Greeks calculation on ticks
  * - Underlying spot price tracking
- * 
+ *
  * @example
  * ```ts
  * const wsManager = new WebSocketManager({
@@ -54,26 +63,26 @@ export interface OptionContractMetadata {
  *   enableGreeksCalculation: true,
  *   defaultRiskFreeRate: 0.065,
  * });
- * 
+ *
  * // Subscribe to entire BankNifty weekly chain
  * const bankNiftyStrikes = [44000, 44050, 44100, ...]; // 50 strikes
  * const subscriptions = bankNiftyStrikes.flatMap(strike => [
  *   { exchangeSegment: "NSE_FNO", securityId: getCallId(strike) },
  *   { exchangeSegment: "NSE_FNO", securityId: getPutId(strike) },
  * ]);
- * 
+ *
  * wsManager.subscribe(subscriptions, {
  *   "44000": { strike: 44000, expiryDate: "2026-01-30", optionType: "call", ... },
  *   // ... more contracts
  * });
- * 
+ *
  * // Listen to enriched ticks with Greeks
  * wsManager.onTick((tick) => {
  *   if (tick.greeks) {
  *     console.log(`Delta: ${tick.greeks.delta}, Theta: ${tick.greeks.theta}`);
  *   }
  * });
- * 
+ *
  * await wsManager.connect();
  * ```
  */
@@ -109,7 +118,11 @@ export class WebSocketManager {
     // Wire up tick handler - only process ticks with LTP data for Greeks
     this.dhanWS.market.on("tick", (tick: MarketFeedEvent) => {
       // Only pass ticker, quote, and full events to handleTick
-      if (tick.type === "ticker" || tick.type === "quote" || tick.type === "full") {
+      if (
+        tick.type === "ticker" ||
+        tick.type === "quote" ||
+        tick.type === "full"
+      ) {
         this.handleTick(tick);
       }
     });
@@ -138,10 +151,10 @@ export class WebSocketManager {
 
   /**
    * Subscribe to instruments with automatic batching.
-   * 
+   *
    * If the number of instruments exceeds the batch size, they are split
    * into multiple subscription requests automatically.
-   * 
+   *
    * @param instruments - Array of instrument subscriptions
    * @param optionMetadataMap - Optional metadata for options (for Greeks calculation)
    */
@@ -159,9 +172,11 @@ export class WebSocketManager {
     // Add to subscribed instruments list for reconnection
     for (const instrument of instruments) {
       const key = `${instrument.exchangeSegment}:${instrument.securityId}`;
-      if (!this.subscribedInstruments.some(
-        (sub) => `${sub.exchangeSegment}:${sub.securityId}` === key,
-      )) {
+      if (
+        !this.subscribedInstruments.some(
+          (sub) => `${sub.exchangeSegment}:${sub.securityId}` === key,
+        )
+      ) {
         this.subscribedInstruments.push(instrument);
       }
     }
@@ -190,11 +205,14 @@ export class WebSocketManager {
 
   /**
    * Update underlying spot price (used for Greeks calculation).
-   * 
+   *
    * @param underlyingSecurityId - Security ID of the underlying index (e.g., "1333" for Nifty)
    * @param spotPrice - Current spot price
    */
-  public updateUnderlyingSpot(underlyingSecurityId: string, spotPrice: number): void {
+  public updateUnderlyingSpot(
+    underlyingSecurityId: string,
+    spotPrice: number,
+  ): void {
     this.underlyingSpots.set(underlyingSecurityId, spotPrice);
   }
 
@@ -242,7 +260,9 @@ export class WebSocketManager {
     return batches;
   }
 
-  private handleTick(tick: MarketTickerEvent | MarketQuoteEvent | MarketFullEvent): void {
+  private handleTick(
+    tick: MarketTickerEvent | MarketQuoteEvent | MarketFullEvent,
+  ): void {
     let enrichedTick: TickWithGreeks = tick;
 
     // Calculate Greeks if enabled and this is an option
@@ -258,7 +278,11 @@ export class WebSocketManager {
           this.underlyingSpots.get(metadata.underlyingSecurityId) ?? 0;
 
         if (underlyingSpot > 0) {
-          enrichedTick = this.greeksCalculator.processTick(tick, metadata, underlyingSpot);
+          enrichedTick = this.greeksCalculator.processTick(
+            tick,
+            metadata,
+            underlyingSpot,
+          );
         }
       }
     }
@@ -283,7 +307,9 @@ export class WebSocketManager {
       this.maxReconnectDelayMs,
     );
 
-    this.logger?.info(`[WebSocketManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`);
+    this.logger?.info(
+      `[WebSocketManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`,
+    );
 
     await new Promise((resolve) => setTimeout(resolve, delay));
 

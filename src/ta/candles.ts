@@ -47,7 +47,15 @@ export function candlesFromSeries(series: ChartSeries | undefined): Candle[] {
     return [];
   }
 
-  const { timestamp, open, high, low, close, volume, open_interest: oi } = series;
+  const {
+    timestamp,
+    open,
+    high,
+    low,
+    close,
+    volume,
+    open_interest: oi,
+  } = series;
   if (!timestamp || !open || !high || !low || !close) {
     return [];
   }

@@ -32,7 +32,8 @@ export class GeneratedClient {
     // for hybrid routing.
     if ((config.mode ?? "live") !== "live") {
       const token =
-        config.sandboxToken ?? (config.mode === "sandbox" ? config.token : undefined);
+        config.sandboxToken ??
+        (config.mode === "sandbox" ? config.token : undefined);
       OpenAPI.BASE = config.sandboxBaseURL ?? SANDBOX_BASE_URL;
       OpenAPI.HEADERS = token ? { "access-token": token } : undefined;
       return;

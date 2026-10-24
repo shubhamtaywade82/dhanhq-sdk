@@ -48,7 +48,8 @@ export class CandleAggregator extends EventEmitter {
     }
 
     const key = candleKey(event.exchangeSegment, event.securityId);
-    const bucketStart = Math.floor(event.ltt / this.intervalSeconds) * this.intervalSeconds;
+    const bucketStart =
+      Math.floor(event.ltt / this.intervalSeconds) * this.intervalSeconds;
     const cumulativeVolume = event.type === "full" ? event.volume : undefined;
     const existing = this.state.get(key);
 
@@ -91,7 +92,12 @@ export class CandleAggregator extends EventEmitter {
   }
 
   /** Primes a bucket with a known candle, e.g. the latest bar from `candlesFromSeries` on connect. */
-  public seed(exchangeSegment: string, securityId: string, candle: Candle, baselineVolume = 0): void {
+  public seed(
+    exchangeSegment: string,
+    securityId: string,
+    candle: Candle,
+    baselineVolume = 0,
+  ): void {
     this.state.set(candleKey(exchangeSegment, securityId), {
       candle: { ...candle },
       bucketStart: candle.timestamp,
@@ -100,7 +106,10 @@ export class CandleAggregator extends EventEmitter {
   }
 
   /** Current (possibly in-progress) candle for a security. */
-  public getCandle(exchangeSegment: string, securityId: string): Candle | undefined {
+  public getCandle(
+    exchangeSegment: string,
+    securityId: string,
+  ): Candle | undefined {
     return this.state.get(candleKey(exchangeSegment, securityId))?.candle;
   }
 

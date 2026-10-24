@@ -7,7 +7,6 @@ import type {
   MarketDepthEvent,
 } from "../../types/ws.types";
 
-
 /**
  * Parses a 20-level market depth packet stream from `wss://depth-api-feed.dhan.co/twentydepth`.
  *
@@ -77,8 +76,7 @@ export function parseMarketDepth20Packet(
 
     const subMatch = subscriptions?.find((s) => s.securityId === secId);
     const exchangeSegment =
-      subMatch?.exchangeSegment ??
-      exchangeSegmentForCode(segCode);
+      subMatch?.exchangeSegment ?? exchangeSegmentForCode(segCode);
 
     const packetSlice = buf.subarray(offset, offset + msgLen);
 
@@ -166,8 +164,7 @@ export function parseMarketDepth200Packet(
 
     const subMatch = subscriptions?.find((s) => s.securityId === secId);
     const exchangeSegment =
-      subMatch?.exchangeSegment ??
-      exchangeSegmentForCode(segCode);
+      subMatch?.exchangeSegment ?? exchangeSegmentForCode(segCode);
 
     const packetSlice = buf.subarray(offset, offset + msgLen);
 
@@ -212,6 +209,7 @@ function parseDepthDisconnect(
     type: "depth-disconnect",
     securityId,
     exchangeSegment: exchangeSegmentForCode(segCode),
-    reasonCode: offset + 14 <= buf.length ? buf.readInt16LE(offset + 12) : undefined,
+    reasonCode:
+      offset + 14 <= buf.length ? buf.readInt16LE(offset + 12) : undefined,
   };
 }

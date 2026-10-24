@@ -149,7 +149,9 @@ export function macd(
   const macdLine: IndicatorSeries = data.map((_, index) => {
     const fastValue = fast[index];
     const slowValue = slow[index];
-    return fastValue === null || slowValue === null ? null : fastValue - slowValue;
+    return fastValue === null || slowValue === null
+      ? null
+      : fastValue - slowValue;
   });
 
   // The signal EMA runs over the defined section of the MACD line only, then
@@ -412,7 +414,9 @@ export function vwap(bars: OhlcBar[]): IndicatorSeries {
     cumulativeVolume += volume;
     cumulativeNotional += typical * volume;
 
-    return cumulativeVolume === 0 ? null : cumulativeNotional / cumulativeVolume;
+    return cumulativeVolume === 0
+      ? null
+      : cumulativeNotional / cumulativeVolume;
   });
 }
 

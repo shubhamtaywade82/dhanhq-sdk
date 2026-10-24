@@ -48,12 +48,14 @@ export class Funds {
   public async calculateMargin(
     request: KnowYourMarginInput,
   ): Promise<KnowYourMarginResponse> {
-    return this.httpClient.request<KnowYourMarginResponse, KnowYourMarginInput>({
-      method: "POST",
-      url: "/margincalculator",
-      data: request,
-      safeToRetry: true,
-    });
+    return this.httpClient.request<KnowYourMarginResponse, KnowYourMarginInput>(
+      {
+        method: "POST",
+        url: "/margincalculator",
+        data: request,
+        safeToRetry: true,
+      },
+    );
   }
 
   public async calculateMultiMargin(

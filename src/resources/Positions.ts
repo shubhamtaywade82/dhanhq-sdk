@@ -44,9 +44,7 @@ export class Positions {
     });
   }
 
-  public async convert(
-    request: ConvertPositionRequest,
-  ): Promise<unknown> {
+  public async convert(request: ConvertPositionRequest): Promise<unknown> {
     return this.httpClient.request<unknown, ConvertPositionRequest>({
       method: "POST",
       url: "/positions/convert",

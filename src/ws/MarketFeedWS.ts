@@ -141,7 +141,10 @@ export class MarketFeedWS extends BaseWS {
   }
 
   /** Docs: at most 100 instruments per JSON message. */
-  private sendInstruments(requestCode: number, instruments: InstrumentSubscription[]): void {
+  private sendInstruments(
+    requestCode: number,
+    instruments: InstrumentSubscription[],
+  ): void {
     const batchSize = 100;
 
     for (let index = 0; index < instruments.length; index += batchSize) {

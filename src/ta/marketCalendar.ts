@@ -100,7 +100,8 @@ export function tradingDaysAgo(date: string, days: number): string {
   return cursor;
 }
 
-export type MarketSessionState = "PRE_MARKET" | "IN_SESSION" | "POST_MARKET" | "CLOSED";
+export type MarketSessionState =
+  "PRE_MARKET" | "IN_SESSION" | "POST_MARKET" | "CLOSED";
 
 export interface MarketSessionInfo {
   istDate: string;
@@ -113,7 +114,9 @@ export interface MarketSessionInfo {
 /**
  * Calculates current market session status in IST time.
  */
-export function getMarketSessionInfo(now: Date = new Date()): MarketSessionInfo {
+export function getMarketSessionInfo(
+  now: Date = new Date(),
+): MarketSessionInfo {
   const shifted = new Date(now.getTime() + IST_OFFSET_MINUTES * 60 * 1000);
   const istDate = shifted.toISOString().slice(0, 10);
   const hours = shifted.getUTCHours();
@@ -242,12 +245,15 @@ export function adjustTradingDateRange(
 
   // 4. Ensure fromDate <= toDate
   if (fromDate > toDate) {
-    adjustments.push(`Adjusted fromDate (${fromDate}) to match toDate (${toDate})`);
+    adjustments.push(
+      `Adjusted fromDate (${fromDate}) to match toDate (${toDate})`,
+    );
     fromDate = toDate;
   }
 
   // 5. Enforce maxDays span limit
-  const msDiff = fromDateString(toDate).getTime() - fromDateString(fromDate).getTime();
+  const msDiff =
+    fromDateString(toDate).getTime() - fromDateString(fromDate).getTime();
   const daySpan = Math.round(msDiff / MS_PER_DAY);
   if (daySpan > maxDays) {
     const clampedFrom = addDays(toDate, -maxDays);

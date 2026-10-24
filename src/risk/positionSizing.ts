@@ -105,7 +105,10 @@ export function volatilitySize(input: VolatilitySizingInput): number {
 }
 
 /** Stop a fixed percentage below entry. */
-export function percentageStop(entryPrice: number, riskPercent: number): number {
+export function percentageStop(
+  entryPrice: number,
+  riskPercent: number,
+): number {
   if (entryPrice <= 0 || riskPercent <= 0) {
     return 0;
   }
@@ -114,7 +117,11 @@ export function percentageStop(entryPrice: number, riskPercent: number): number 
 }
 
 /** Stop `multiplier` ATRs below entry. */
-export function atrStop(entryPrice: number, atr: number, multiplier = 2): number {
+export function atrStop(
+  entryPrice: number,
+  atr: number,
+  multiplier = 2,
+): number {
   if (entryPrice <= 0 || atr <= 0) {
     return 0;
   }

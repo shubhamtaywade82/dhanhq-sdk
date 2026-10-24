@@ -543,7 +543,8 @@ function globalStocksTools({ client }: CatalogueDependencies): Tool[] {
         type: "object",
         properties: { orderId: { type: "string" } },
       },
-      handler: (args) => client.globalStocks.orders.cancel(String(args.orderId)),
+      handler: (args) =>
+        client.globalStocks.orders.cancel(String(args.orderId)),
     }),
   ];
 }

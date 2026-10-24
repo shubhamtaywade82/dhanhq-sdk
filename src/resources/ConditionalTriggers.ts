@@ -52,7 +52,8 @@ export interface PlaceConditionalTriggerRequest {
   orders: AlertOrderInput[];
 }
 
-export type ModifyConditionalTriggerRequest = Partial<PlaceConditionalTriggerRequest>;
+export type ModifyConditionalTriggerRequest =
+  Partial<PlaceConditionalTriggerRequest>;
 
 /**
  * Conditional Trigger Orders (Alert Orders) API wrapper.
@@ -139,7 +140,10 @@ export class ConditionalTriggers {
   public async place(
     request: PlaceConditionalTriggerRequest,
   ): Promise<AlertOrderResponse> {
-    return this.httpClient.request<AlertOrderResponse, PlaceConditionalTriggerRequest>({
+    return this.httpClient.request<
+      AlertOrderResponse,
+      PlaceConditionalTriggerRequest
+    >({
       method: "POST",
       url: "/alerts/orders",
       data: request,
@@ -154,7 +158,10 @@ export class ConditionalTriggers {
     alertId: string,
     request: ModifyConditionalTriggerRequest,
   ): Promise<AlertOrderResponse> {
-    return this.httpClient.request<AlertOrderResponse, ModifyConditionalTriggerRequest>({
+    return this.httpClient.request<
+      AlertOrderResponse,
+      ModifyConditionalTriggerRequest
+    >({
       method: "PUT",
       url: `/alerts/orders/${encodeURIComponent(alertId)}`,
       data: request,
@@ -194,7 +201,10 @@ export class ConditionalTriggers {
   }): AlertConditionInput {
     const { exchangeSegment, securityId, frequency = "ONCE" } = options;
 
-    if (options.triggerAbove !== undefined && options.triggerBelow !== undefined) {
+    if (
+      options.triggerAbove !== undefined &&
+      options.triggerBelow !== undefined
+    ) {
       throw new Error("Specify either triggerAbove or triggerBelow, not both");
     }
 
@@ -246,10 +256,21 @@ export class ConditionalTriggers {
     crossingBelow?: number;
     frequency?: "ONCE";
   }): AlertConditionInput {
-    const { exchangeSegment, securityId, indicatorName, timeFrame = "FIFTEEN_MIN", frequency = "ONCE" } = options;
+    const {
+      exchangeSegment,
+      securityId,
+      indicatorName,
+      timeFrame = "FIFTEEN_MIN",
+      frequency = "ONCE",
+    } = options;
 
-    if (options.crossingAbove !== undefined && options.crossingBelow !== undefined) {
-      throw new Error("Specify either crossingAbove or crossingBelow, not both");
+    if (
+      options.crossingAbove !== undefined &&
+      options.crossingBelow !== undefined
+    ) {
+      throw new Error(
+        "Specify either crossingAbove or crossingBelow, not both",
+      );
     }
 
     if (options.crossingAbove !== undefined) {

@@ -32,7 +32,10 @@ export const searchSchema: JsonSchema = {
   type: "object",
   required: ["query"],
   properties: {
-    query: { type: "string", description: "Symbol or partial symbol to resolve" },
+    query: {
+      type: "string",
+      description: "Symbol or partial symbol to resolve",
+    },
     segments: {
       type: "array",
       items: enumOf(EXCHANGE_SEGMENTS),
@@ -174,7 +177,13 @@ export const expiredOptionsSchema: JsonSchema = {
   ],
   properties: {
     securityId: { type: ["string", "integer"] },
-    exchangeSegment: enumOf(["NSE_FNO", "BSE_FNO", "MCX_COMM", "IDX_I", "NSE_EQ"]),
+    exchangeSegment: enumOf([
+      "NSE_FNO",
+      "BSE_FNO",
+      "MCX_COMM",
+      "IDX_I",
+      "NSE_EQ",
+    ]),
     instrument: enumOf(["INDEX", "OPTIDX", "OPTSTK", "EQUITY"]),
     instrumentType: enumOf(["INDEX", "STOCK"]),
     expiryFlag: enumOf(["WEEK", "MONTH", "WEEKLY", "MONTHLY"]),
@@ -271,7 +280,8 @@ export const globalOrderSchema: JsonSchema = {
     quantity: {
       type: "number",
       exclusiveMinimum: 0,
-      description: "Fractional shares allowed. Required unless orderType is AMOUNT",
+      description:
+        "Fractional shares allowed. Required unless orderType is AMOUNT",
     },
     price: { type: "number", minimum: 0 },
     triggerPrice: { type: "number", exclusiveMinimum: 0 },
@@ -323,7 +333,8 @@ export const pnlExitSchema: JsonSchema = {
     },
     enableKillSwitch: {
       type: "boolean",
-      description: "Also trip the kill switch, blocking re-entry after the exit",
+      description:
+        "Also trip the kill switch, blocking re-entry after the exit",
     },
     productType: {
       type: "array",
