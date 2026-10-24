@@ -106,7 +106,7 @@
     "dev": "tsup --watch",
     "test": "jest",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src --ext .ts --max-warnings 0",
     "lint:fix": "eslint src --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",

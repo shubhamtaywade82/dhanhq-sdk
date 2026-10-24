@@ -6,7 +6,9 @@ const globals = require("globals");
 
 module.exports = [
   {
-    ignores: ["dist/**", "node_modules/**", "coverage/**", "*.js"],
+    // src/generated is rewritten by `npm run generate` from openapi.json (weekly,
+    // via the upstream watch), so lint findings there cannot be fixed by hand.
+    ignores: ["dist/**", "node_modules/**", "coverage/**", "*.js", "src/generated/**"],
   },
   js.configs.recommended,
   ...tseslint.configs["flat/recommended"],
@@ -33,7 +35,9 @@ module.exports = [
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/prefer-nullish-coalescing": "error",
       "@typescript-eslint/prefer-optional-chain": "error",
-      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+      // ignoreRestSiblings: `const { secret: _secret, ...rest } = obj` is the
+      // idiom for dropping a key, not an unused variable.
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", ignoreRestSiblings: true }],
       "no-console": ["warn", { allow: ["warn", "error"] }],
       eqeqeq: ["error", "always", { null: "ignore" }],
       curly: ["error", "all"],

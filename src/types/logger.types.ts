@@ -66,12 +66,14 @@ export class ConsoleLogger implements Logger {
   
   debug(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('debug')) {
+      // eslint-disable-next-line no-console -- writing to the console is this logger's job
       console.debug(this.format('DEBUG', message, context));
     }
   }
   
   info(message: string, context?: Record<string, unknown>): void {
     if (this.shouldLog('info')) {
+      // eslint-disable-next-line no-console -- writing to the console is this logger's job
       console.info(this.format('INFO', message, context));
     }
   }

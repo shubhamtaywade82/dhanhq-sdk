@@ -424,9 +424,9 @@ export class HttpClient {
 
   private extractRetryAfter(error: Bottleneck.BottleneckError): number | undefined {
     // Extract retry-after information from bottleneck error if available
-    const anyError = error as any;
-    if (anyError.retryAfterMs !== undefined) {
-      return anyError.retryAfterMs;
+    const { retryAfterMs } = error as Bottleneck.BottleneckError & { retryAfterMs?: number };
+    if (retryAfterMs !== undefined) {
+      return retryAfterMs;
     }
     // Default to 1 second if not specified
     return 1000;
