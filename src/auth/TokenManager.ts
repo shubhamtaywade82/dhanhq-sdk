@@ -97,7 +97,10 @@ export class TokenManager {
       return;
     }
 
-    if (this.issuedAt !== undefined && Date.now() - this.issuedAt < this.minReloginIntervalMs) {
+    if (
+      this.issuedAt !== undefined &&
+      Date.now() - this.issuedAt < this.minReloginIntervalMs
+    ) {
       return;
     }
 
@@ -190,7 +193,8 @@ export class TokenManager {
       if (!raw) return undefined;
 
       const token = new TokenResponse(raw);
-      if (token.clientId && token.clientId !== this.options.clientId) return undefined;
+      if (token.clientId && token.clientId !== this.options.clientId)
+        return undefined;
       // An expired token cannot be renewed, so it is no better than nothing.
       return token.isExpired() ? undefined : token;
     } catch (error) {

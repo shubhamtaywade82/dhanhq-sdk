@@ -26,10 +26,7 @@ export const ALL_SCOPES: AgentScope[] = [...READ_SCOPES, ...WRITE_SCOPES];
  * needs the live-trading gate open, not just the scope.
  */
 export type ToolRisk =
-  | "read_only"
-  | "trade_adjacent_read"
-  | "live_write"
-  | "destructive_write";
+  "read_only" | "trade_adjacent_read" | "live_write" | "destructive_write";
 
 export interface PolicyOptions {
   scopes?: AgentScope[];
@@ -115,7 +112,10 @@ export class Policy {
   }
 
   /** Throws unless the policy holds `scope` *and* writes are enabled. */
-  public requireWrite(scope: AgentScope, env: NodeJS.ProcessEnv = process.env): true {
+  public requireWrite(
+    scope: AgentScope,
+    env: NodeJS.ProcessEnv = process.env,
+  ): true {
     this.require(scope);
 
     if (this.writesEnabled(env)) {

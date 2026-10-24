@@ -37,7 +37,7 @@ async function main(): Promise<void> {
 
 main().catch((error: unknown) => {
   process.stderr.write(
-    `dhanhq-mcp: ${error instanceof Error ? error.stack ?? error.message : String(error)}\n`,
+    `dhanhq-mcp: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`,
   );
   process.exit(1);
 });

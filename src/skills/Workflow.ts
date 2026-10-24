@@ -45,11 +45,15 @@ export class Workflow<TContext extends Record<string, unknown>> {
    * Runs every step, stopping at the first failure and reporting which step
    * failed rather than surfacing a bare error.
    */
-  public async run(
-    context: TContext,
-  ): Promise<
+  public async run(context: TContext): Promise<
     | { ok: true; context: TContext; completed: string[] }
-    | { ok: false; context: TContext; completed: string[]; failedStep: string; error: unknown }
+    | {
+        ok: false;
+        context: TContext;
+        completed: string[];
+        failedStep: string;
+        error: unknown;
+      }
   > {
     let current = context;
     const completed: string[] = [];

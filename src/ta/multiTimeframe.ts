@@ -5,12 +5,7 @@ import type {
 } from "./TechnicalAnalysis";
 
 export type Momentum =
-  | "overbought"
-  | "oversold"
-  | "bullish"
-  | "bearish"
-  | "neutral"
-  | "unknown";
+  "overbought" | "oversold" | "bullish" | "bearish" | "neutral" | "unknown";
 export type TrendStrength = "strong" | "moderate" | "weak" | "unknown";
 export type Signal = "bullish" | "bearish" | "neutral" | "unknown";
 export type Bias = "bullish" | "bearish" | "neutral";
@@ -202,7 +197,9 @@ function rsiRationale(entries: TimeframeClassification[]): string {
 
 function macdRationale(entries: TimeframeClassification[]): string {
   const ups = entries.filter((entry) => entry.macdSignal === "bullish").length;
-  const downs = entries.filter((entry) => entry.macdSignal === "bearish").length;
+  const downs = entries.filter(
+    (entry) => entry.macdSignal === "bearish",
+  ).length;
 
   if (ups > downs) return "MACD bullish signals dominant";
   if (downs > ups) return "MACD bearish signals dominant";

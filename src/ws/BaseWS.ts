@@ -10,12 +10,12 @@ export abstract class BaseWS extends EventEmitter {
   protected reconnectAttempts = 0;
   public isConnected = false;
   protected logger?: Logger;
-  
+
   // Heartbeat configuration
   private pingInterval?: NodeJS.Timeout;
   private pongTimeout?: NodeJS.Timeout;
   private readonly pingIntervalMs = 30000; // 30 seconds
-  private readonly pongTimeoutMs = 10000;   // 10 seconds
+  private readonly pongTimeoutMs = 10000; // 10 seconds
 
   private readonly maxReconnectDelayMs: number;
   private readonly maxReconnectAttempts: number;
@@ -111,12 +111,12 @@ export abstract class BaseWS extends EventEmitter {
     }
 
     const delay = this.calculateBackoff(this.reconnectAttempts);
-    
+
     this.logger?.info(`Reconnecting in ${delay.toFixed(0)}ms`, {
       attempt: this.reconnectAttempts + 1,
       maxAttempts: this.maxReconnectAttempts,
     });
-    
+
     this.reconnectAttempts += 1;
     this.reconnectTimer = setTimeout(() => {
       void this.connect();
@@ -134,12 +134,12 @@ export abstract class BaseWS extends EventEmitter {
     const maxDelay = this.maxReconnectDelayMs;
     const exponential = Math.min(
       maxDelay,
-      baseDelay * Math.pow(2, Math.min(attempt, 6)) // Cap at 2^6 = 64 seconds
+      baseDelay * Math.pow(2, Math.min(attempt, 6)), // Cap at 2^6 = 64 seconds
     );
-    
+
     // Add jitter: ±25% randomization to prevent thundering herd
     const jitter = exponential * 0.25 * (Math.random() * 2 - 1);
-    
+
     return exponential + jitter;
   }
 

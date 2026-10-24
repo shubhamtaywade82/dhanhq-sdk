@@ -1,7 +1,4 @@
-import type {
-  ExchangeSegment,
-  TransactionType,
-} from "./order.types";
+import type { ExchangeSegment, TransactionType } from "./order.types";
 import type { CorrelatedRequest } from "./common.types";
 
 export type SuperOrderProductType = "CNC" | "INTRADAY" | "MARGIN" | "MTF";

@@ -31,9 +31,7 @@ export interface EdisBulkFormInput {
 export class Edis {
   constructor(private readonly httpClient: HttpClient) {}
 
-  public async form(
-    request: EdisFormInput,
-  ): Promise<EdisFormResponse> {
+  public async form(request: EdisFormInput): Promise<EdisFormResponse> {
     return this.httpClient.request<EdisFormResponse, EdisFormInput>({
       method: "POST",
       url: "/edis/form",
@@ -42,9 +40,7 @@ export class Edis {
     });
   }
 
-  public async bulkForm(
-    request: EdisBulkFormInput,
-  ): Promise<EdisFormResponse> {
+  public async bulkForm(request: EdisBulkFormInput): Promise<EdisFormResponse> {
     return this.httpClient.request<EdisFormResponse, EdisBulkFormInput>({
       method: "POST",
       url: "/edis/bulkform",

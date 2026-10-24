@@ -126,7 +126,8 @@ export class DhanClient {
       partnerId: config.partnerId,
       partnerSecret: config.partnerSecret,
       logger: dependencies.logger,
-      blockedBy: config.mode === "sandbox" ? sandboxWebSocketError() : undefined,
+      blockedBy:
+        config.mode === "sandbox" ? sandboxWebSocketError() : undefined,
     });
     this.auth = {
       generateAccessToken: DhanAuth.generateAccessToken,
@@ -195,7 +196,10 @@ export class DhanClient {
     const totpSecret = nonEmpty(env.DHAN_TOTP_SECRET);
 
     if (!clientId) {
-      throw new AuthenticationError("Configuration", "DHAN_CLIENT_ID is not set");
+      throw new AuthenticationError(
+        "Configuration",
+        "DHAN_CLIENT_ID is not set",
+      );
     }
 
     if (Boolean(pin) !== Boolean(totpSecret)) {
@@ -209,7 +213,10 @@ export class DhanClient {
     // Sandbox mode sends the primary credentials to sandbox.dhan.co, which
     // only accepts its own token — PIN/TOTP (production) login does not apply.
     const useTotp =
-      Boolean(pin && totpSecret) && mode !== "sandbox" && !overrides.token && !overrides.tokenProvider;
+      Boolean(pin && totpSecret) &&
+      mode !== "sandbox" &&
+      !overrides.token &&
+      !overrides.tokenProvider;
 
     if (!token && !useTotp && !overrides.token && !overrides.tokenProvider) {
       throw new AuthenticationError(
@@ -232,12 +239,16 @@ export class DhanClient {
     });
 
     if (useTotp) {
-      const cacheOff = ["off", "false", "0"].includes((env.DHAN_TOKEN_CACHE ?? "").trim().toLowerCase());
+      const cacheOff = ["off", "false", "0"].includes(
+        (env.DHAN_TOKEN_CACHE ?? "").trim().toLowerCase(),
+      );
       client.auth.enableAutoTokenManagement({
         clientId,
         pin: pin as string,
         totpSecret: totpSecret as string,
-        store: cacheOff ? undefined : new FileTokenStore({ directory: env.DHAN_TOKEN_CACHE_DIR }),
+        store: cacheOff
+          ? undefined
+          : new FileTokenStore({ directory: env.DHAN_TOKEN_CACHE_DIR }),
       });
     }
 

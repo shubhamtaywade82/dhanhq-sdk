@@ -1,8 +1,8 @@
+import type { AlertOrderResponse, GetAlertResponse } from "../generated";
 import type {
-  AlertOrderResponse,
-  GetAlertResponse,
-} from "../generated";
-import type { AlertConditionInput, AlertOrderInput } from "./ConditionalTriggers";
+  AlertConditionInput,
+  AlertOrderInput,
+} from "./ConditionalTriggers";
 
 import { HttpClient } from "../client/HttpClient";
 
@@ -31,7 +31,8 @@ export interface MultiOrderLeg {
   /** Identifies the leg within the batch. */
   sequence: string;
   transactionType: "BUY" | "SELL";
-  exchangeSegment: "NSE_EQ" | "NSE_FNO" | "NSE_COMM" | "BSE_EQ" | "BSE_FNO" | "MCX_COMM";
+  exchangeSegment:
+    "NSE_EQ" | "NSE_FNO" | "NSE_COMM" | "BSE_EQ" | "BSE_FNO" | "MCX_COMM";
   productType?: "CNC" | "INTRADAY" | "MARGIN" | "MTF";
   orderType?: "LIMIT" | "MARKET" | "STOP_LOSS" | "STOP_LOSS_MARKET";
   validity?: "DAY" | "IOC";
@@ -70,9 +71,7 @@ export class Alerts {
     });
   }
 
-  public async place(
-    request: PlaceAlertRequest,
-  ): Promise<AlertOrderResponse> {
+  public async place(request: PlaceAlertRequest): Promise<AlertOrderResponse> {
     return this.httpClient.request<AlertOrderResponse, PlaceAlertRequest>({
       method: "POST",
       url: "/alerts/orders",
@@ -92,17 +91,24 @@ export class Alerts {
     }
     request.orders.forEach((leg, index) => {
       if (!leg.sequence || !leg.transactionType || !leg.exchangeSegment) {
-        throw new RangeError(`placeMulti order ${index}: sequence, transactionType and exchangeSegment are required`);
+        throw new RangeError(
+          `placeMulti order ${index}: sequence, transactionType and exchangeSegment are required`,
+        );
       }
       if (leg.correlationId !== undefined && leg.correlationId.length > 30) {
-        throw new RangeError(`placeMulti order ${index}: correlationId exceeds 30 characters`);
+        throw new RangeError(
+          `placeMulti order ${index}: correlationId exceeds 30 characters`,
+        );
       }
     });
 
     return this.httpClient.request<unknown, PlaceMultiOrderRequest>({
       method: "POST",
       url: "/alerts/multi/orders",
-      data: { ...request, dhanClientId: request.dhanClientId ?? this.httpClient.getClientId() },
+      data: {
+        ...request,
+        dhanClientId: request.dhanClientId ?? this.httpClient.getClientId(),
+      },
       safeToRetry: false,
       tier: "order_api",
     });

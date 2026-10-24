@@ -1,6 +1,9 @@
 import { InstrumentType, TransactionType } from "../../constants";
 import { DhanError } from "../../errors";
-import { nearestStrike, type NormalizedOptionChain } from "../../resources/OptionChain";
+import {
+  nearestStrike,
+  type NormalizedOptionChain,
+} from "../../resources/OptionChain";
 import {
   legPremium,
   legSecurityId,
@@ -154,7 +157,8 @@ export class ProtectivePutSkill extends EquityOverlaySkill {
       maxPremiumPct: {
         type: "number",
         default: 3,
-        description: "Reject the structure if the put costs more than this share of spot",
+        description:
+          "Reject the structure if the put costs more than this share of spot",
       },
     },
   };

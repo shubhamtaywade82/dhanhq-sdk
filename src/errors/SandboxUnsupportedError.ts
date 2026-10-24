@@ -11,7 +11,7 @@ export class SandboxUnsupportedError extends DhanError {
     super(
       message ??
         `${method} ${url} is not available on the Dhan sandbox (https://sandbox.dhan.co/v2). ` +
-          "It has no sandbox equivalent; use mode \"live\" for it, or keep it out of sandbox runs.",
+          'It has no sandbox equivalent; use mode "live" for it, or keep it out of sandbox runs.',
       { code: "SANDBOX_UNSUPPORTED" },
     );
     this.name = "SandboxUnsupportedError";

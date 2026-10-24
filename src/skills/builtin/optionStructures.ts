@@ -193,7 +193,10 @@ export class StraddleSkill extends OptionStructureSkill {
 
   protected buildIntent(context: OptionSkillContext): OptionSkillContext {
     const legs = context.legs ?? [];
-    const totalPremium = legs.reduce((total, leg) => total + (leg.premium ?? 0), 0);
+    const totalPremium = legs.reduce(
+      (total, leg) => total + (leg.premium ?? 0),
+      0,
+    );
     const strike = Number(context.atmStrike ?? 0);
 
     return {

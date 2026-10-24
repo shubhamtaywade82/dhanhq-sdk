@@ -5,7 +5,12 @@ import type { RiskLimits } from "../risk/types";
 import { createSkillRegistry, SkillRegistry } from "../skills";
 import { buildCatalogue } from "./catalogue";
 import { ALL_SCOPES, Policy } from "./Policy";
-import { describeTool, isWriteTool, type Tool, type ToolDescriptor } from "./Tool";
+import {
+  describeTool,
+  isWriteTool,
+  type Tool,
+  type ToolDescriptor,
+} from "./Tool";
 
 export interface ToolRegistryOptions {
   client: DhanClient;

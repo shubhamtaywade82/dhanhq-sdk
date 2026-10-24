@@ -17,11 +17,7 @@ export type GlobalOrderType =
   /** Notional order: spend a dollar `amount` rather than buy a quantity. */
   | "AMOUNT";
 
-export type GlobalLegName =
-  | "ENTRY_LEG"
-  | "STOP_LOSS_LEG"
-  | "TARGET_LEG"
-  | "NA";
+export type GlobalLegName = "ENTRY_LEG" | "STOP_LOSS_LEG" | "TARGET_LEG" | "NA";
 
 export interface GlobalPlaceOrderRequest extends CorrelatedRequest {
   dhanClientId?: string;

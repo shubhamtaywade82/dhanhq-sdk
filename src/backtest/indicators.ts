@@ -13,7 +13,10 @@ import {
   vwap as calcVwap,
   type IndicatorSeries,
 } from "../ta/indicators";
-import { analyzeMultiTimeframe, type MultiTimeframeSummary } from "../ta/multiTimeframe";
+import {
+  analyzeMultiTimeframe,
+  type MultiTimeframeSummary,
+} from "../ta/multiTimeframe";
 import {
   TIMEFRAMES,
   type TechnicalAnalysisResult,
@@ -65,18 +68,27 @@ function readAt(series: IndicatorSeries, index: number): number | null {
  * indexing into a full-series computation is identical to recomputing over
  * a truncated slice, just O(1) instead of O(n) per read.
  */
-function createSeriesAccessors(ctx: SeriesContext, readIndex: () => number): IndicatorAccessors {
+function createSeriesAccessors(
+  ctx: SeriesContext,
+  readIndex: () => number,
+): IndicatorAccessors {
   const self: IndicatorAccessors = {
     sma(period = 20) {
-      const series = getCached(ctx, `sma:${period}`, () => calcSma(closes(ctx.candles), period));
+      const series = getCached(ctx, `sma:${period}`, () =>
+        calcSma(closes(ctx.candles), period),
+      );
       return readAt(series, readIndex());
     },
     ema(period = 20) {
-      const series = getCached(ctx, `ema:${period}`, () => calcEma(closes(ctx.candles), period));
+      const series = getCached(ctx, `ema:${period}`, () =>
+        calcEma(closes(ctx.candles), period),
+      );
       return readAt(series, readIndex());
     },
     rsi(period = 14) {
-      const series = getCached(ctx, `rsi:${period}`, () => calcRsi(closes(ctx.candles), period));
+      const series = getCached(ctx, `rsi:${period}`, () =>
+        calcRsi(closes(ctx.candles), period),
+      );
       return readAt(series, readIndex());
     },
     macd(options = {}) {
@@ -93,11 +105,15 @@ function createSeriesAccessors(ctx: SeriesContext, readIndex: () => number): Ind
       };
     },
     atr(period = 14) {
-      const series = getCached(ctx, `atr:${period}`, () => calcAtr(ctx.candles, period));
+      const series = getCached(ctx, `atr:${period}`, () =>
+        calcAtr(ctx.candles, period),
+      );
       return readAt(series, readIndex());
     },
     adx(period = 14) {
-      const result = getCached(ctx, `adx:${period}`, () => calcAdx(ctx.candles, period));
+      const result = getCached(ctx, `adx:${period}`, () =>
+        calcAdx(ctx.candles, period),
+      );
       return readAt(result.adx, readIndex());
     },
     bollinger(options = {}) {
@@ -129,8 +145,14 @@ function createSeriesAccessors(ctx: SeriesContext, readIndex: () => number): Ind
         calcSupertrend(ctx.candles, { period, multiplier }),
       );
       const index = readIndex();
-      const direction = index >= 0 && index < result.direction.length ? result.direction[index] : null;
-      return { value: readAt(result.trend, index), direction: direction ?? null };
+      const direction =
+        index >= 0 && index < result.direction.length
+          ? result.direction[index]
+          : null;
+      return {
+        value: readAt(result.trend, index),
+        direction: direction ?? null,
+      };
     },
     vwap() {
       const series = getCached(ctx, "vwap", () => calcVwap(ctx.candles));
@@ -139,21 +161,29 @@ function createSeriesAccessors(ctx: SeriesContext, readIndex: () => number): Ind
     // Overwritten by createIndicatorAccessors for the root object; a bare
     // series accessor (e.g. one returned by .timeframe()) doesn't nest further.
     timeframe() {
-      throw new Error("timeframe() is only available on the root indicator accessor");
+      throw new Error(
+        "timeframe() is only available on the root indicator accessor",
+      );
     },
     bias() {
-      throw new Error("bias() is only available on the root indicator accessor");
+      throw new Error(
+        "bias() is only available on the root indicator accessor",
+      );
     },
   };
 
   return self;
 }
 
-const MINUTES_TO_TIMEFRAME_KEY: Partial<Record<number, TimeframeKey>> = Object.fromEntries(
-  Object.entries(TIMEFRAMES).map(([minutes, key]) => [Number(minutes), key]),
-);
+const MINUTES_TO_TIMEFRAME_KEY: Partial<Record<number, TimeframeKey>> =
+  Object.fromEntries(
+    Object.entries(TIMEFRAMES).map(([minutes, key]) => [Number(minutes), key]),
+  );
 
-function classificationFor(entry: TimeframeEntry, accessor: IndicatorAccessors): TimeframeIndicators {
+function classificationFor(
+  entry: TimeframeEntry,
+  accessor: IndicatorAccessors,
+): TimeframeIndicators {
   const index = entry.readIndex();
   return {
     rsi: accessor.rsi(),
@@ -182,7 +212,10 @@ export function createIndicatorAccessors(
 ): IndicatorAccessors {
   const root = createSeriesAccessors(primaryCtx, primaryReadIndex);
   const htfAccessors = new Map<number, IndicatorAccessors>(
-    htfEntries.map((entry) => [entry.minutes, createSeriesAccessors(entry.ctx, entry.readIndex)]),
+    htfEntries.map((entry) => [
+      entry.minutes,
+      createSeriesAccessors(entry.ctx, entry.readIndex),
+    ]),
   );
 
   root.timeframe = (minutes: number) => {
@@ -212,7 +245,10 @@ export function createIndicatorAccessors(
       }
     }
 
-    return analyzeMultiTimeframe({ indicators } as Pick<TechnicalAnalysisResult, "indicators">);
+    return analyzeMultiTimeframe({ indicators } as Pick<
+      TechnicalAnalysisResult,
+      "indicators"
+    >);
   };
 
   return root;

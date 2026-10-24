@@ -86,9 +86,13 @@ export class Pipeline {
     this.checks = config.checks ?? BASE_CHECKS;
   }
 
-  private async buildContext(options: PipelineRunOptions): Promise<RiskContext> {
+  private async buildContext(
+    options: PipelineRunOptions,
+  ): Promise<RiskContext> {
     const provider = memoizeProvider(this.provider);
-    const reducing = provider ? isRiskReducing(options.args, await provider.positions()) : false;
+    const reducing = provider
+      ? isRiskReducing(options.args, await provider.positions())
+      : false;
 
     return {
       args: options.args,
@@ -164,7 +168,9 @@ export function riskTypeFor(instrument?: Instrument): RiskInstrumentKind {
  * Wraps a provider so one run fetches positions and funds at most once,
  * however many checks ask for them.
  */
-function memoizeProvider(provider?: RiskDataProvider): RiskDataProvider | undefined {
+function memoizeProvider(
+  provider?: RiskDataProvider,
+): RiskDataProvider | undefined {
   if (!provider) {
     return undefined;
   }

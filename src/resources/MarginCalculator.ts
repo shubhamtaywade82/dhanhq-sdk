@@ -22,11 +22,11 @@ export interface MarginScriptItem {
 
 /**
  * Margin Calculator API wrapper.
- * 
+ *
  * Supports both single-order and multi-leg margin calculations with hedge benefits.
  * For F&O strategies (spreads, iron condors, etc.), use the multi-leg endpoint to
  * get combined margin requirements with hedging benefits applied.
- * 
+ *
  * @see https://dhan.co/help/docs/api/v2/#margin-calculator
  */
 export class MarginCalculator {
@@ -34,7 +34,7 @@ export class MarginCalculator {
 
   /**
    * Calculate margin for a single order.
-   * 
+   *
    * @example
    * ```ts
    * const margin = await client.marginCalculator.calculateSingle({
@@ -54,20 +54,22 @@ export class MarginCalculator {
   ): Promise<MarginCalculationResponse> {
     // `/margincalculator` takes one order as a flat object; `scripList` is
     // only understood by `/margincalculator/multi`.
-    return this.httpClient.request<MarginCalculationResponse, MarginScriptItem>({
-      method: "POST",
-      url: "/margincalculator",
-      data: request,
-      safeToRetry: true,
-    });
+    return this.httpClient.request<MarginCalculationResponse, MarginScriptItem>(
+      {
+        method: "POST",
+        url: "/margincalculator",
+        data: request,
+        safeToRetry: true,
+      },
+    );
   }
 
   /**
    * Calculate margin for multiple legs with hedge benefits.
-   * 
+   *
    * This is essential for multi-leg strategies like spreads, straddles, and iron condors,
    * where margin benefits are applied due to hedging.
-   * 
+   *
    * @example
    * ```ts
    * // Bull Call Spread: Buy lower strike call, sell higher strike call
@@ -89,16 +91,19 @@ export class MarginCalculator {
    *     price: 100.00,
    *   },
    * ]);
-   * 
+   *
    * // The response will show reduced margin due to hedge benefits
    * ```
-   * 
+   *
    * @param legs Array of order legs for the strategy
    */
   public async calculateMulti(
     legs: MarginScriptItem[],
   ): Promise<MultiScripMarginCalcResponse> {
-    return this.httpClient.request<MultiScripMarginCalcResponse, { scripList: MarginScriptItem[] }>({
+    return this.httpClient.request<
+      MultiScripMarginCalcResponse,
+      { scripList: MarginScriptItem[] }
+    >({
       method: "POST",
       url: "/margincalculator/multi",
       data: {
@@ -110,7 +115,7 @@ export class MarginCalculator {
 
   /**
    * Helper: Build a bull call spread margin calculation.
-   * 
+   *
    * @example
    * ```ts
    * const margin = await client.marginCalculator.bullCallSpread({
@@ -161,7 +166,7 @@ export class MarginCalculator {
 
   /**
    * Helper: Build a bull put spread margin calculation.
-   * 
+   *
    * @example
    * ```ts
    * const margin = await client.marginCalculator.bullPutSpread({
@@ -212,7 +217,7 @@ export class MarginCalculator {
 
   /**
    * Helper: Build an iron condor margin calculation (4 legs).
-   * 
+   *
    * @example
    * ```ts
    * const margin = await client.marginCalculator.ironCondor({

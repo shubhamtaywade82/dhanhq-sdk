@@ -13,7 +13,9 @@ export interface ExpiredOptionsDataRequest {
   strike: string; // e.g., "ATM", "ATM+1", "ATM-2"
   drvOptionType: "CALL" | "PUT" | string;
   interval?: "1" | "5" | "15" | "25" | "60" | string;
-  requiredData?: ("open" | "high" | "low" | "close" | "volume" | "oi" | string)[];
+  requiredData?: (
+    "open" | "high" | "low" | "close" | "volume" | "oi" | string
+  )[];
   fromDate: string; // YYYY-MM-DD
   toDate: string; // YYYY-MM-DD
   autoAdjustDates?: boolean;
@@ -37,10 +39,10 @@ export interface ExpiredOptionsDataResponse {
 
 /**
  * Expired Options Historical Data API wrapper.
- * 
+ *
  * Fetches historical data for expired F&O contracts — essential for
  * backtesting options strategies against past expiry series.
- * 
+ *
  * @see https://docs.dhanhq.co/api/v2/expired-options-data
  */
 export class ExpiredOptionsData {
@@ -48,7 +50,7 @@ export class ExpiredOptionsData {
 
   /**
    * Fetch historical data for an expired option contract.
-   * 
+   *
    * @example
    * ```ts
    * // Fetch NIFTY weekly ATM call data for January 2026
@@ -65,7 +67,7 @@ export class ExpiredOptionsData {
    *   fromDate: "2026-01-01",
    *   toDate: "2026-02-01",
    * });
-   * 
+   *
    * // Fetch BANKNIFTY monthly ATM-1 put data for December 2025
    * const peData = await client.expiredOptionsData.fetch({
    *   securityId: 25, // NIFTY Bank index
@@ -106,10 +108,7 @@ export class ExpiredOptionsData {
       instrument: reqCopy.instrument ?? reqCopy.instrumentType,
       ...reqCopy,
     };
-    return this.httpClient.request<
-      ExpiredOptionsDataResponse,
-      typeof payload
-    >({
+    return this.httpClient.request<ExpiredOptionsDataResponse, typeof payload>({
       method: "POST",
       url: "/charts/rollingoption",
       data: payload,

@@ -20,7 +20,8 @@ export function parseDhanErrorBody(details: unknown): DhanApiErrorBody {
   return {
     errorType: typeof body.errorType === "string" ? body.errorType : undefined,
     errorCode: typeof body.errorCode === "string" ? body.errorCode : undefined,
-    errorMessage: typeof body.errorMessage === "string" ? body.errorMessage : undefined,
+    errorMessage:
+      typeof body.errorMessage === "string" ? body.errorMessage : undefined,
   };
 }
 
@@ -32,7 +33,12 @@ export class ApiResponseError extends DhanError {
   /** Dhan's own human-readable message from the response body, when present. */
   public readonly errorMessage?: string;
 
-  constructor(message: string, status: number, details?: unknown, cause?: unknown) {
+  constructor(
+    message: string,
+    status: number,
+    details?: unknown,
+    cause?: unknown,
+  ) {
     super(message, {
       code: "API_RESPONSE_ERROR",
       status,

@@ -134,9 +134,7 @@ function toOrderState(data: Record<string, unknown>): OrderState {
     status: typeof data.Status === "string" ? data.Status : undefined,
     tradedQty: typeof data.TradedQty === "number" ? data.TradedQty : undefined,
     averageTradedPrice:
-      typeof data.AvgTradedPrice === "number"
-        ? data.AvgTradedPrice
-        : undefined,
+      typeof data.AvgTradedPrice === "number" ? data.AvgTradedPrice : undefined,
     securityId:
       typeof data.SecurityId === "string" ? data.SecurityId : undefined,
     raw: data,

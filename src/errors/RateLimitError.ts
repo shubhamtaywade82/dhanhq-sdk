@@ -19,7 +19,10 @@ export class RateLimitError extends DhanError {
   /** Dhan's own human-readable message from the response body, when present. */
   public readonly errorMessage?: string;
 
-  constructor(message = "Request rate limit exhausted", options: RateLimitErrorOptions = {}) {
+  constructor(
+    message = "Request rate limit exhausted",
+    options: RateLimitErrorOptions = {},
+  ) {
     super(message, {
       code: "RATE_LIMIT_ERROR",
       status: options.status,

@@ -67,7 +67,10 @@ export class ForeverOrders {
   public async place(
     request: PlaceForeverOrderRequest,
   ): Promise<GttOrderStatusResponse> {
-    return this.httpClient.request<GttOrderStatusResponse, PlaceForeverOrderRequest>({
+    return this.httpClient.request<
+      GttOrderStatusResponse,
+      PlaceForeverOrderRequest
+    >({
       method: "POST",
       url: "/forever/orders",
       data: request,
@@ -80,7 +83,10 @@ export class ForeverOrders {
     orderId: string,
     request: ModifyForeverOrderRequest,
   ): Promise<GttOrderStatusResponse> {
-    return this.httpClient.request<GttOrderStatusResponse, ModifyForeverOrderRequest>({
+    return this.httpClient.request<
+      GttOrderStatusResponse,
+      ModifyForeverOrderRequest
+    >({
       method: "PUT",
       url: `/forever/orders/${encodeURIComponent(orderId)}`,
       data: request,

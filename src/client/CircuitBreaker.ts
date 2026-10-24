@@ -35,7 +35,10 @@ export class CircuitBreaker {
   }
 
   public getState(): CircuitState {
-    if (this.state === "open" && Date.now() - this.openedAt >= this.resetTimeoutMs) {
+    if (
+      this.state === "open" &&
+      Date.now() - this.openedAt >= this.resetTimeoutMs
+    ) {
       return "half-open";
     }
     return this.state;
@@ -64,7 +67,9 @@ export class CircuitBreaker {
 
   private onSuccess(): void {
     if (this.state !== "closed") {
-      this.logger?.info("Circuit breaker closed", { previousState: this.state });
+      this.logger?.info("Circuit breaker closed", {
+        previousState: this.state,
+      });
     }
     this.consecutiveFailures = 0;
     this.state = "closed";
@@ -74,7 +79,8 @@ export class CircuitBreaker {
     this.consecutiveFailures += 1;
 
     const shouldOpen =
-      observedState === "half-open" || this.consecutiveFailures >= this.failureThreshold;
+      observedState === "half-open" ||
+      this.consecutiveFailures >= this.failureThreshold;
 
     if (shouldOpen) {
       this.state = "open";

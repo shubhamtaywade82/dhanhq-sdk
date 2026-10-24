@@ -70,7 +70,9 @@ export function portfolioSummary(input: {
 }): string {
   const holdings = input.holdings ?? [];
   const positions = input.positions ?? [];
-  const open = positions.filter((position) => Number(position.netQty ?? 0) !== 0);
+  const open = positions.filter(
+    (position) => Number(position.netQty ?? 0) !== 0,
+  );
 
   const lines = ["=== Portfolio Summary ==="];
 

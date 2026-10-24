@@ -20,7 +20,10 @@ export class Orders {
     request: PlaceOrderRequest,
   ): Promise<OrderOperationResult<OrderResponse>> {
     const payload = this.parsePlaceRequest(request);
-    const data = await this.httpClient.request<OrderResponse, PlaceOrderRequest>({
+    const data = await this.httpClient.request<
+      OrderResponse,
+      PlaceOrderRequest
+    >({
       method: "POST",
       url: "/orders",
       data: payload,
@@ -112,22 +115,23 @@ export class Orders {
   }
 
   public async modify(request: ModifyOrderRequest): Promise<OrderResponse> {
-    return this.httpClient.request<OrderResponse, Omit<ModifyOrderRequest, "orderId">>(
-      {
-        method: "PUT",
-        url: `/orders/${encodeURIComponent(request.orderId)}`,
-        data: {
-          orderType: request.orderType,
-          validity: request.validity,
-          quantity: request.quantity,
-          disclosedQuantity: request.disclosedQuantity,
-          price: request.price,
-          triggerPrice: request.triggerPrice,
-        },
-        safeToRetry: false,
-        tier: "order_api",
+    return this.httpClient.request<
+      OrderResponse,
+      Omit<ModifyOrderRequest, "orderId">
+    >({
+      method: "PUT",
+      url: `/orders/${encodeURIComponent(request.orderId)}`,
+      data: {
+        orderType: request.orderType,
+        validity: request.validity,
+        quantity: request.quantity,
+        disclosedQuantity: request.disclosedQuantity,
+        price: request.price,
+        triggerPrice: request.triggerPrice,
       },
-    );
+      safeToRetry: false,
+      tier: "order_api",
+    });
   }
 
   public async cancel(orderId: string): Promise<OrderResponse> {
