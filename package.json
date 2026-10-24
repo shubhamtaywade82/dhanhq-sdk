@@ -121,7 +121,8 @@
     "docs:build": "npm run docs:api && vitepress build website",
     "docs:preview": "vitepress preview website",
     "clean": "rm -rf dist",
-    "prepare": "npm run build",
+    "hooks:install": "git rev-parse --is-inside-work-tree >/dev/null 2>&1 && git config core.hooksPath .githooks || true",
+    "prepare": "npm run hooks:install && npm run build",
     "prepublishOnly": "npm run clean && npm run typecheck && npm run lint && npm test && npm run build"
   },
   "dependencies": {
