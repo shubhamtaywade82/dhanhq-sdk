@@ -9,10 +9,6 @@ export type MultiOrderRequest = {
      */
     dhanClientId: string;
     /**
-     * Optional algo identifier
-     */
-    algoId?: string;
-    /**
      * List of orders to place
      */
     orders: Array<MultiOrderItemRequest>;
