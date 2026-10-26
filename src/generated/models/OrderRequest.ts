@@ -91,10 +91,6 @@ export type OrderRequest = {
      * Bracket Order/Cover Order Stop Loss Price
      */
     boStopLossValue?: number;
-    /**
-     * Optional algo identifier
-     */
-    algoId?: string;
 };
 export namespace OrderRequest {
     /**
