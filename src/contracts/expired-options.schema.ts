@@ -20,18 +20,30 @@ export const expiredOptionsDataSchema = z
       "IDX_I",
       "NSE_EQ",
     ]),
-    instrument: z
-      .enum(["INDEX", "OPTIDX", "OPTSTK", "EQUITY", "FUTIDX", "FUTSTK"])
-      .optional(),
+    instrument: z.enum(["OPTIDX", "OPTSTK"]).optional(),
     instrumentType: z.enum(["INDEX", "STOCK"]).optional(),
-    expiryFlag: z.enum(["WEEK", "MONTH", "WEEKLY", "MONTHLY"]),
-    expiryCode: z.number().int().min(1).max(10),
+    expiryFlag: z.enum(["WEEK", "MONTH"]),
+    expiryCode: z.number().int().min(0).max(2),
     strike: z
       .string()
       .min(1, "strike is required (e.g. 'ATM', 'ATM+1', 'ATM-2')"),
     drvOptionType: z.enum(["CALL", "PUT"]),
     interval: z.enum(["1", "5", "15", "25", "60"]).optional(),
-    requiredData: z.array(z.string()).optional(),
+    requiredData: z
+      .array(
+        z.enum([
+          "open",
+          "high",
+          "low",
+          "close",
+          "iv",
+          "volume",
+          "strike",
+          "oi",
+          "spot",
+        ]),
+      )
+      .optional(),
     fromDate: z
       .string()
       .regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
@@ -51,7 +63,12 @@ export const expiredOptionsDataSchema = z
     if (val.fromDate > val.toDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `fromDate (${val.fromDate}) must be <= toDate (${val.toDate})`,
+        message:
+          "fromDate (" +
+          val.fromDate +
+          ") must be <= toDate (" +
+          val.toDate +
+          ")",
         path: ["fromDate"],
       });
     }
@@ -59,16 +76,24 @@ export const expiredOptionsDataSchema = z
     if (val.toDate > todayIst) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `toDate (${val.toDate}) cannot be in the future (today in IST is ${todayIst})`,
+        message:
+          "toDate (" +
+          val.toDate +
+          ") cannot be in the future (today in IST is " +
+          todayIst +
+          ")",
         path: ["toDate"],
       });
     }
 
     const diff = dayDifference(val.fromDate, val.toDate);
-    if (diff > 180) {
+    if (diff > 30) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `Expired options data range (${diff} days) exceeds maximum limit of 180 days`,
+        message:
+          "Expired options data range (" +
+          diff +
+          " days) exceeds Dhan's maximum limit of 30 calendar days",
         path: ["toDate"],
       });
     }
