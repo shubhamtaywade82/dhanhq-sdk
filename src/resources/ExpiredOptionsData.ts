@@ -121,13 +121,19 @@ export class ExpiredOptionsData {
     const instrument =
       reqCopy.instrument ??
       (reqCopy.instrumentType === "INDEX" ? "OPTIDX" : "OPTSTK");
-    const {
-      instrumentType: _instrumentType,
-      instrument: _requestedInstrument,
-      ...requestBody
-    } = reqCopy;
-
-    const payload = { ...requestBody, instrument };
+    const payload = {
+      securityId: reqCopy.securityId,
+      exchangeSegment: reqCopy.exchangeSegment,
+      instrument,
+      expiryFlag: reqCopy.expiryFlag,
+      expiryCode: reqCopy.expiryCode,
+      strike: reqCopy.strike,
+      drvOptionType: reqCopy.drvOptionType,
+      interval: reqCopy.interval,
+      requiredData: reqCopy.requiredData,
+      fromDate: reqCopy.fromDate,
+      toDate: reqCopy.toDate,
+    };
 
     return this.httpClient.request<ExpiredOptionsDataResponse, typeof payload>({
       method: "POST",
