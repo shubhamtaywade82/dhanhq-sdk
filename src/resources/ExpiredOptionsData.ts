@@ -24,7 +24,7 @@ export interface ExpiredOptionsDataRequest {
   instrumentType?: "INDEX" | "STOCK";
   /** WEEKLY/MONTHLY are SDK aliases normalized to Dhan's WEEK/MONTH enums. */
   expiryFlag: ExpiredOptionsExpiryFlag;
-  expiryCode: number;
+  expiryCode: 0 | 1 | 2;
   strike: string;
   drvOptionType: "CALL" | "PUT";
   interval?: "1" | "5" | "15" | "25" | "60";
@@ -156,7 +156,7 @@ export class ExpiredOptionsData {
     exchangeSegment: ExpiredOptionsDataRequest["exchangeSegment"];
     instrumentType: "INDEX" | "STOCK";
     expiryFlag: ExpiredOptionsExpiryFlag;
-    expiryCode: number;
+    expiryCode: 0 | 1 | 2;
     optionType: "CALL" | "PUT";
     fromDate: string;
     toDate: string;
