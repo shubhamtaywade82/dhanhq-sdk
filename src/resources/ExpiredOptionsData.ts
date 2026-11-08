@@ -3,10 +3,21 @@ import { expiredOptionsDataSchema } from "../contracts/expired-options.schema";
 import { ValidationError } from "../errors";
 import { adjustTradingDateRange } from "../ta/marketCalendar";
 
-export type ExpiredOptionsExpiryFlag = "WEEK" | "MONTH" | "WEEKLY" | "MONTHLY";
+export type ExpiredOptionsExpiryFlag =
+  | "WEEK"
+  | "MONTH"
+  | "WEEKLY"
+  | "MONTHLY";
 export type ExpiredOptionsField =
-  | "open" | "high" | "low" | "close" | "iv"
-  | "volume" | "strike" | "oi" | "spot";
+  | "open"
+  | "high"
+  | "low"
+  | "close"
+  | "iv"
+  | "volume"
+  | "strike"
+  | "oi"
+  | "spot";
 
 export interface ExpiredOptionsDataRequest {
   securityId: string | number;
@@ -89,8 +100,9 @@ export class ExpiredOptionsData {
 
     if (!Number.isFinite(spanDays) || spanDays > 30) {
       throw new RangeError(
-        "Expired options date range (" + spanDays +
-        " days) exceeds Dhan's maximum of 30 calendar days",
+        "Expired options date range (" +
+          spanDays +
+          " days) exceeds Dhan's maximum of 30 calendar days",
       );
     }
 
@@ -163,7 +175,8 @@ export class ExpiredOptionsData {
       strike: "ATM",
       drvOptionType: options.optionType,
       requiredData:
-        options.requiredData ?? ["close", "iv", "volume", "strike", "oi", "spot"],
+        options.requiredData ??
+        ["close", "iv", "volume", "strike", "oi", "spot"],
       fromDate: options.fromDate,
       toDate: options.toDate,
     };
@@ -197,7 +210,8 @@ export class ExpiredOptionsData {
       strike,
       drvOptionType: options.optionType,
       requiredData:
-        options.requiredData ?? ["close", "iv", "volume", "strike", "oi", "spot"],
+        options.requiredData ??
+        ["close", "iv", "volume", "strike", "oi", "spot"],
       fromDate: options.fromDate,
       toDate: options.toDate,
     };
