@@ -23,7 +23,7 @@ export const expiredOptionsDataSchema = z
     instrument: z.enum(["OPTIDX", "OPTSTK"]).optional(),
     instrumentType: z.enum(["INDEX", "STOCK"]).optional(),
     expiryFlag: z.enum(["WEEK", "MONTH"]),
-    expiryCode: z.number().int().min(1).max(10),
+    expiryCode: z.number().int().min(0).max(2),
     strike: z
       .string()
       .min(1, "strike is required (e.g. 'ATM', 'ATM+1', 'ATM-2')"),
