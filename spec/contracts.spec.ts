@@ -103,6 +103,32 @@ describe("Runtime contracts & date adjustment validation", () => {
         toDate: "2026-07-28",
       });
       expect(valid.success).toBe(true);
+
+      const currentExpiry = expiredOptionsDataSchema.safeParse({
+        securityId: 13,
+        exchangeSegment: "NSE_FNO",
+        instrument: "OPTIDX",
+        expiryFlag: "WEEK",
+        expiryCode: 0,
+        strike: "ATM",
+        drvOptionType: "CALL",
+        fromDate: "2026-07-01",
+        toDate: "2026-07-28",
+      });
+      expect(currentExpiry.success).toBe(true);
+
+      const invalidExpiryCode = expiredOptionsDataSchema.safeParse({
+        securityId: 13,
+        exchangeSegment: "NSE_FNO",
+        instrument: "OPTIDX",
+        expiryFlag: "WEEK",
+        expiryCode: 3,
+        strike: "ATM",
+        drvOptionType: "CALL",
+        fromDate: "2026-07-01",
+        toDate: "2026-07-28",
+      });
+      expect(invalidExpiryCode.success).toBe(false);
     });
 
     it("rejects missing instrument and instrumentType", () => {
