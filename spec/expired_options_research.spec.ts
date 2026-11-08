@@ -51,7 +51,7 @@ const baseRequest = {
   strike: "ATM",
   drvOptionType: "CALL" as const,
   interval: "1" as const,
-  requiredData: ["open", "high", "low", "close", "iv", "volume", "strike", "oi", "spot"] as const,
+  requiredData: ["open", "high", "low", "close", "iv", "volume", "strike", "oi", "spot"],
   fromDate: "2026-11-02",
   toDate: "2026-11-07",
   autoAdjustDates: false,
