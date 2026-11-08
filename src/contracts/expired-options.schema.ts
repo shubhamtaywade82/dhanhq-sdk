@@ -24,7 +24,9 @@ export const expiredOptionsDataSchema = z
     instrumentType: z.enum(["INDEX", "STOCK"]).optional(),
     expiryFlag: z.enum(["WEEK", "MONTH"]),
     expiryCode: z.number().int().min(1).max(10),
-    strike: z.string().min(1, "strike is required (e.g. 'ATM', 'ATM+1', 'ATM-2')"),
+    strike: z
+      .string()
+      .min(1, "strike is required (e.g. 'ATM', 'ATM+1', 'ATM-2')"),
     drvOptionType: z.enum(["CALL", "PUT"]),
     interval: z.enum(["1", "5", "15", "25", "60"]).optional(),
     requiredData: z
@@ -42,8 +44,12 @@ export const expiredOptionsDataSchema = z
         ]),
       )
       .optional(),
-    fromDate: z.string().regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
-    toDate: z.string().regex(DATE_REGEX, "toDate must be YYYY-MM-DD format"),
+    fromDate: z
+      .string()
+      .regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
+    toDate: z
+      .string()
+      .regex(DATE_REGEX, "toDate must be YYYY-MM-DD format"),
   })
   .superRefine((val, ctx) => {
     const todayIst = toIstDateString();
@@ -59,7 +65,12 @@ export const expiredOptionsDataSchema = z
     if (val.fromDate > val.toDate) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "fromDate (" + val.fromDate + ") must be <= toDate (" + val.toDate + ")",
+        message:
+          "fromDate (" +
+          val.fromDate +
+          ") must be <= toDate (" +
+          val.toDate +
+          ")",
         path: ["fromDate"],
       });
     }
@@ -68,8 +79,11 @@ export const expiredOptionsDataSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "toDate (" + val.toDate + ") cannot be in the future (today in IST is " +
-          todayIst + ")",
+          "toDate (" +
+          val.toDate +
+          ") cannot be in the future (today in IST is " +
+          todayIst +
+          ")",
         path: ["toDate"],
       });
     }
@@ -79,7 +93,8 @@ export const expiredOptionsDataSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "Expired options data range (" + diff +
+          "Expired options data range (" +
+          diff +
           " days) exceeds Dhan's maximum limit of 30 calendar days",
         path: ["toDate"],
       });
