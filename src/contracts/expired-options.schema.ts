@@ -47,9 +47,7 @@ export const expiredOptionsDataSchema = z
     fromDate: z
       .string()
       .regex(DATE_REGEX, "fromDate must be YYYY-MM-DD format"),
-    toDate: z
-      .string()
-      .regex(DATE_REGEX, "toDate must be YYYY-MM-DD format"),
+    toDate: z.string().regex(DATE_REGEX, "toDate must be YYYY-MM-DD format"),
   })
   .superRefine((val, ctx) => {
     const todayIst = toIstDateString();

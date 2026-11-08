@@ -138,14 +138,12 @@ export function attributeOptionPremiumChange(
     contributions[factor] /= orders.length;
   }
 
-  const actualPremiumChange =
-    input.to.marketPremium - input.from.marketPremium;
+  const actualPremiumChange = input.to.marketPremium - input.from.marketPremium;
   const modeledPremiumChange = endModel - startModel;
 
   return {
     actualPremiumChange,
-    actualReturnPct:
-      (actualPremiumChange / input.from.marketPremium) * 100,
+    actualReturnPct: (actualPremiumChange / input.from.marketPremium) * 100,
     modeledPremiumFrom: startModel,
     modeledPremiumTo: endModel,
     modeledPremiumChange,

@@ -3,11 +3,7 @@ import { expiredOptionsDataSchema } from "../contracts/expired-options.schema";
 import { ValidationError } from "../errors";
 import { adjustTradingDateRange } from "../ta/marketCalendar";
 
-export type ExpiredOptionsExpiryFlag =
-  | "WEEK"
-  | "MONTH"
-  | "WEEKLY"
-  | "MONTHLY";
+export type ExpiredOptionsExpiryFlag = "WEEK" | "MONTH" | "WEEKLY" | "MONTHLY";
 export type ExpiredOptionsField =
   | "open"
   | "high"
@@ -174,9 +170,14 @@ export class ExpiredOptionsData {
       expiryCode: options.expiryCode,
       strike: "ATM",
       drvOptionType: options.optionType,
-      requiredData:
-        options.requiredData ??
-        ["close", "iv", "volume", "strike", "oi", "spot"],
+      requiredData: options.requiredData ?? [
+        "close",
+        "iv",
+        "volume",
+        "strike",
+        "oi",
+        "spot",
+      ],
       fromDate: options.fromDate,
       toDate: options.toDate,
     };
@@ -209,9 +210,14 @@ export class ExpiredOptionsData {
       expiryCode: options.expiryCode,
       strike,
       drvOptionType: options.optionType,
-      requiredData:
-        options.requiredData ??
-        ["close", "iv", "volume", "strike", "oi", "spot"],
+      requiredData: options.requiredData ?? [
+        "close",
+        "iv",
+        "volume",
+        "strike",
+        "oi",
+        "spot",
+      ],
       fromDate: options.fromDate,
       toDate: options.toDate,
     };
