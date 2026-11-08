@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { fromDateString, toIstDateString } from "../ta/marketCalendar";
 
-const DATE_REGEX = /^\\d{4}-\\d{2}-\\d{2}$/;
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
 function dayDifference(fromStr: string, toStr: string): number {
