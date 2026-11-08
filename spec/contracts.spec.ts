@@ -123,7 +123,7 @@ describe("Runtime contracts & date adjustment validation", () => {
       const invalid = expiredOptionsDataSchema.safeParse({
         securityId: 13,
         exchangeSegment: "NSE_FNO",
-        instrument: "INDEX",
+        instrument: "OPTIDX",
         expiryFlag: "WEEK",
         expiryCode: 1,
         strike: "ATM",
