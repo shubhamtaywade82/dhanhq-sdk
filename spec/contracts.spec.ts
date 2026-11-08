@@ -93,7 +93,7 @@ describe("Runtime contracts & date adjustment validation", () => {
       const valid = expiredOptionsDataSchema.safeParse({
         securityId: 13,
         exchangeSegment: "NSE_FNO",
-        instrument: "INDEX",
+        instrument: "OPTIDX",
         expiryFlag: "WEEK",
         expiryCode: 1,
         strike: "ATM",
@@ -119,7 +119,7 @@ describe("Runtime contracts & date adjustment validation", () => {
       expect(invalid.success).toBe(false);
     });
 
-    it("rejects date range exceeding 180 days for expired options", () => {
+    it("rejects date range exceeding 30 calendar days for expired options", () => {
       const invalid = expiredOptionsDataSchema.safeParse({
         securityId: 13,
         exchangeSegment: "NSE_FNO",
@@ -129,11 +129,11 @@ describe("Runtime contracts & date adjustment validation", () => {
         strike: "ATM",
         drvOptionType: "CALL",
         fromDate: "2025-01-01",
-        toDate: "2025-10-01",
+        toDate: "2025-02-02",
       });
       expect(invalid.success).toBe(false);
       if (!invalid.success) {
-        expect(invalid.error.issues[0].message).toContain("exceeds maximum limit of 180 days");
+        expect(invalid.error.issues[0].message).toContain("maximum limit of 30 calendar days");
       }
     });
   });
