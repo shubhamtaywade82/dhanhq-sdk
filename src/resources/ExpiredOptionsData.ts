@@ -188,7 +188,7 @@ export class ExpiredOptionsData {
     exchangeSegment: ExpiredOptionsDataRequest["exchangeSegment"];
     instrumentType: "INDEX" | "STOCK";
     expiryFlag: ExpiredOptionsExpiryFlag;
-    expiryCode: number;
+    expiryCode: 0 | 1 | 2;
     optionType: "CALL" | "PUT";
     offset: number;
     fromDate: string;
