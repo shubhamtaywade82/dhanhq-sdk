@@ -2,7 +2,7 @@ import type { AxiosInstance } from "axios";
 
 import { HttpClient } from "../src/client/HttpClient";
 import { RateLimiter } from "../src/client/RateLimiter";
-import { ExpiredOptionsData } from "../src/resources/ExpiredOptionsData";
+import { ExpiredOptionsData, type ExpiredOptionsDataRequest } from "../src/resources/ExpiredOptionsData";
 
 function createClient(response: unknown = {
   status: "success",
@@ -42,7 +42,7 @@ function createClient(response: unknown = {
   return { client: new ExpiredOptionsData(http), requests };
 }
 
-const baseRequest = {
+const baseRequest: ExpiredOptionsDataRequest = {
   securityId: 13,
   exchangeSegment: "NSE_FNO",
   instrument: "OPTIDX" as const,
