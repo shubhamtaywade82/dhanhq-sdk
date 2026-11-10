@@ -15,6 +15,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `FeedDisconnectError`, `DataApiErrorCode`, `FEED_TERMINAL_DISCONNECT_CODES`,
   and `WebSocketManager.onFatalError(callback)`. A server disconnect with a
   terminal reason (804–810) halts the socket and is reported through these.
+- `client.profile.dataSubscription()` reads the production profile's `dataPlan`
+  and returns `{ active, status, validity }`. `client.profile.assertDataApiActive()`
+  throws `DataApiSubscriptionError` when the plan is not `Active`. Both read
+  production in every mode. The profile does not identify Data vs Pro plans.
 
 ### Changed
 

@@ -123,7 +123,7 @@ describe("DH-902 on data endpoints means no Data API plan", () => {
     expect(error).toBeInstanceOf(DataApiSubscriptionError);
     expect(error).toBeInstanceOf(ApiResponseError);
     expect(error).toMatchObject({ code: "DATA_API_NOT_SUBSCRIBED", status: 400, errorCode: "DH-902" });
-    expect((error as Error).message).toContain("Data API subscription required");
+    expect((error as Error).message).toContain("Data API subscription");
     expect((error as Error).message).toContain("Subscribe to Data APIs");
   });
 

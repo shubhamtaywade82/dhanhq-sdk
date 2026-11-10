@@ -132,6 +132,7 @@ with raw request/response types; see `src/generated/services`.
 | Verb | Path | SDK method | Hybrid mode | Sandbox mode |
 |---|---|---|---|---|
 | GET | `/profile` | `client.profile.get()` | sandbox | sandbox |
+| GET | `/profile` | `client.profile.dataSubscription()` | production | production |
 
 ## Market quotes — `client.marketFeed`
 

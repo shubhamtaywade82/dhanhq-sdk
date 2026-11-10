@@ -1,29 +1,26 @@
 import { ApiResponseError } from "./ApiResponseError";
 
+export interface DataApiSubscriptionErrorOptions {
+  /** HTTP status of the rejected request; absent when the plan check itself refused. */
+  status?: number;
+  details?: unknown;
+  cause?: unknown;
+}
+
 /**
- * A Data API call (market quote, historical/intraday charts, expired options,
- * option chain, ScanX analytics) was rejected because the account has no
- * active Data API plan. Dhan reports this as `DH-902` ("invalid access") on
- * these endpoints; on the feed it is numeric `806`.
- *
- * Subclasses {@link ApiResponseError}, so existing `instanceof ApiResponseError`
- * checks keep working. It is never retried: the plan has to be bought first.
+ * The account is not entitled to a Data API endpoint: Dhan answered `DH-902`
+ * (numeric `806` on the feed), or `client.profile.assertDataApiActive()` found
+ * the Data API plan inactive. The message says which. Subclasses
+ * {@link ApiResponseError}, so existing `instanceof ApiResponseError` checks
+ * keep working. It is never retried: the plan or entitlement has to change first.
  */
 export class DataApiSubscriptionError extends ApiResponseError {
-  constructor(
-    status: number,
-    details?: unknown,
-    cause?: unknown,
-    errorMessage?: string,
-  ) {
+  constructor(message: string, options: DataApiSubscriptionErrorOptions = {}) {
     super(
-      "Data API subscription required: this account lacks an active Data API plan (Dhan DH-902). " +
-        `Subscribe at dhanhq.co before calling data endpoints.${
-          errorMessage ? ` Dhan said: ${errorMessage}` : ""
-        }`,
-      status,
-      details,
-      cause,
+      message,
+      options.status,
+      options.details,
+      options.cause,
       "DATA_API_NOT_SUBSCRIBED",
     );
     this.name = "DataApiSubscriptionError";

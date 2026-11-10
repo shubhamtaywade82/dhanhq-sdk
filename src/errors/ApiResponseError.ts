@@ -35,7 +35,7 @@ export class ApiResponseError extends DhanError {
 
   constructor(
     message: string,
-    status: number,
+    status?: number,
     details?: unknown,
     cause?: unknown,
     code: string = "API_RESPONSE_ERROR",
