@@ -10,6 +10,16 @@ are read-only, use the data-API rate tier, and are production only — in
 `hybrid` mode they go to production with the production token; in `sandbox`
 mode they throw `SandboxUnsupportedError`.
 
+## Plan access
+
+These endpoints need an active Data API plan. Without one, Dhan answers
+`DH-902`, and the SDK throws `DataApiSubscriptionError` (`code:
+"DATA_API_NOT_SUBSCRIBED"`, `errorCode: "DH-902"`). It is an
+`ApiResponseError` subclass, so existing `instanceof` checks still match, and it
+is never retried. The same applies to market quote, option chain, and
+historical/intraday/expired-options charts. Trading endpoints still return
+plain `ApiResponseError` for `DH-902`.
+
 Responses are passed through as returned by Dhan; type them with the generic
 parameter (`client.scanx.technical<MyShape>(...)`).
 

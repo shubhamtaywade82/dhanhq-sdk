@@ -2,10 +2,15 @@ import type { InstrumentSubscription } from "../types/common.types";
 import type {
   DhanWSOptions,
   Logger,
+  MarketDisconnectEvent,
   MarketTickerEvent,
   MarketQuoteEvent,
   MarketFullEvent,
 } from "../types/ws.types";
+import {
+  FeedDisconnectError,
+  isTerminalFeedDisconnect,
+} from "../errors/FeedDisconnectError";
 import { DhanWS } from "./DhanWS";
 import type { MarketFeedEvent } from "../types/ws.types";
 import {
@@ -98,12 +103,15 @@ export class WebSocketManager {
   private reconnectAttempts = 0;
   private maxReconnectDelayMs: number;
   private isReconnecting = false;
+  private fatalCallback?: (error: FeedDisconnectError) => void;
+  private readonly autoReconnect: boolean;
   private readonly logger?: Logger;
 
   constructor(config: WebSocketManagerConfig) {
     this.maxInstrumentsPerBatch = config.maxInstrumentsPerBatch ?? 4000;
     this.enableGreeksCalculation = config.enableGreeksCalculation ?? false;
     this.maxReconnectDelayMs = config.maxReconnectDelayMs ?? 30000;
+    this.autoReconnect = config.enableAutoReconnect !== false;
     this.logger = config.logger;
 
     if (this.enableGreeksCalculation) {
@@ -127,12 +135,20 @@ export class WebSocketManager {
       }
     });
 
-    // Wire up disconnect handler for auto-reconnect
-    if (config.enableAutoReconnect !== false) {
-      this.dhanWS.market.on("disconnect", () => {
-        this.handleDisconnect();
-      });
-    }
+    // Always listen: a terminal reason must reach onFatalError even when
+    // auto-reconnect is off. handleDisconnect gates the reconnect itself.
+    this.dhanWS.market.on("disconnect", (event: MarketDisconnectEvent) => {
+      void this.handleDisconnect(event.reasonCode);
+    });
+  }
+
+  /**
+   * Called once when the server ends the market feed with a reason that a
+   * reconnect cannot clear (e.g. 806: no Data API plan). The feed stays halted;
+   * fix the cause and create a new manager.
+   */
+  public onFatalError(callback: (error: FeedDisconnectError) => void): void {
+    this.fatalCallback = callback;
   }
 
   /**
@@ -293,8 +309,18 @@ export class WebSocketManager {
     }
   }
 
-  private async handleDisconnect(): Promise<void> {
-    if (this.isReconnecting || !this.subscribedInstruments.length) {
+  private async handleDisconnect(reasonCode?: number): Promise<void> {
+    if (reasonCode !== undefined && isTerminalFeedDisconnect(reasonCode)) {
+      // BaseWS already halted the socket (no reconnect, connect() rejects).
+      this.reportFatal(new FeedDisconnectError(reasonCode));
+      return;
+    }
+
+    if (
+      !this.autoReconnect ||
+      this.isReconnecting ||
+      !this.subscribedInstruments.length
+    ) {
       return;
     }
 
@@ -311,23 +337,27 @@ export class WebSocketManager {
       `[WebSocketManager] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`,
     );
 
+    // Close now, before waiting. This marks the close as manual, so the base
+    // class does not also schedule its own reconnect (two live sockets otherwise).
+    this.dhanWS.market.disconnect();
+
     await new Promise((resolve) => setTimeout(resolve, delay));
 
     try {
-      // Reconnect
-      await this.dhanWS.connect();
-
-      // Re-subscribe to all instruments
-      const batches = this.chunkInstruments(this.subscribedInstruments);
-      for (const batch of batches) {
-        this.dhanWS.subscribe(batch);
-      }
+      // Market feed only: DhanWS.connect() would also reopen the order-update
+      // and depth sockets. onOpen re-sends every stored subscription, so there
+      // is no separate re-subscribe step.
+      await this.dhanWS.market.connect();
 
       this.logger?.info(
         `[WebSocketManager] Reconnected and restored ${this.subscribedInstruments.length} subscriptions`,
       );
       this.reconnectAttempts = 0;
     } catch (error) {
+      if (error instanceof FeedDisconnectError) {
+        this.reportFatal(error);
+        return;
+      }
       console.error("[WebSocketManager] Reconnection failed:", error);
       // Schedule another attempt
       this.isReconnecting = false;
@@ -335,5 +365,10 @@ export class WebSocketManager {
     } finally {
       this.isReconnecting = false;
     }
+  }
+
+  private reportFatal(error: FeedDisconnectError): void {
+    this.logger?.error(`[WebSocketManager] ${error.message}`);
+    this.fatalCallback?.(error);
   }
 }

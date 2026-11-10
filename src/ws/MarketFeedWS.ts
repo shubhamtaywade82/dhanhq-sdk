@@ -1,6 +1,10 @@
 import WebSocket from "ws";
 
 import { AuthResolver } from "../auth";
+import {
+  FeedDisconnectError,
+  isTerminalFeedDisconnect,
+} from "../errors/FeedDisconnectError";
 import type { InstrumentSubscription } from "../types/common.types";
 import type {
   MarketFeedMode,
@@ -125,6 +129,9 @@ export class MarketFeedWS extends BaseWS {
       }
 
       if (parsed.type === "disconnect") {
+        if (isTerminalFeedDisconnect(parsed.reasonCode)) {
+          this.haltTerminally(new FeedDisconnectError(parsed.reasonCode));
+        }
         this.emit("disconnect", parsed);
       }
 

@@ -57,3 +57,14 @@
 - The token is resolved from the client on every connect and reconnect, so a
   token from `enableAutoTokenManagement`, or one renewed or replaced after
   startup, reaches the sockets
+- **Terminal disconnects halt the socket.** A server disconnect (code 50)
+  whose reason is in `FEED_TERMINAL_DISCONNECT_CODES` (804 instrument cap, 805
+  connection cap, 806 no Data API plan, 807–810 token or client-ID errors)
+  is not retried. The socket closes, `connect()` rejects with
+  `FeedDisconnectError` (`reasonCode`, `reason` from `DataApiErrorCode`), and
+  `WebSocketManager.onFatalError` fires once. Other reasons (e.g. 800) reconnect
+  with backoff. Without the halt, a server that accepts the socket and then
+  sends 806 would be reconnected forever, since each `open` resets the counter.
+- `WebSocketManager` reconnects only the market feed. Stored subscriptions are
+  re-sent on `open`, so the order-update and depth sockets are not reopened and
+  no second market socket is created.

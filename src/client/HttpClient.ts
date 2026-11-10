@@ -8,10 +8,11 @@ import Bottleneck from "bottleneck";
 
 import { AuthResolver } from "../auth";
 import type { ApiTier } from "../constants";
-import { TradingErrorCode } from "../constants";
+import { DATA_SUBSCRIPTION_TIERS, TradingErrorCode } from "../constants";
 import {
   ApiResponseError,
   AuthenticationError,
+  DataApiSubscriptionError,
   NetworkError,
   RateLimitError,
   SandboxUnsupportedError,
@@ -140,7 +141,7 @@ export class HttpClient {
 
         return await this.rateLimiter.scheduleRead(execute);
       } catch (error) {
-        throw this.normalizeError(error);
+        throw this.normalizeError(error, options.tier);
       }
     };
 
@@ -205,7 +206,7 @@ export class HttpClient {
       );
       return response.data;
     } catch (error) {
-      const normalized = this.normalizeError(error);
+      const normalized = this.normalizeError(error, options.tier);
 
       if (this.isAuthenticationFailure(normalized)) {
         if (this.usesDedicatedSandboxCredentials(options.url)) {
@@ -394,7 +395,7 @@ export class HttpClient {
     );
   }
 
-  private normalizeError(error: unknown): Error {
+  private normalizeError(error: unknown, tier?: ApiTier): Error {
     if (error instanceof Error && !(error instanceof AxiosError)) {
       return error;
     }
@@ -416,6 +417,19 @@ export class HttpClient {
               cause: error,
               retryAfterMs: this.extractRetryAfterHeader(axiosError.response),
             },
+          );
+        }
+
+        if (
+          errorCode === TradingErrorCode.INVALID_ACCESS &&
+          tier !== undefined &&
+          DATA_SUBSCRIPTION_TIERS.includes(tier)
+        ) {
+          return new DataApiSubscriptionError(
+            status,
+            payload,
+            error,
+            parseDhanErrorBody(payload).errorMessage,
           );
         }
 
