@@ -20,6 +20,16 @@ is never retried. The same applies to market quote, option chain, and
 historical/intraday/expired-options charts. Trading endpoints still return
 plain `ApiResponseError` for `DH-902`.
 
+To fail fast instead of waiting for a rejected call, check the plan first.
+`client.profile.dataSubscription()` reads the production profile in every mode
+and returns `{ active, status, validity }` (`dataPlan` is `Active` or
+`Deactive`; `validity` is returned as-is). `client.profile.assertDataApiActive()`
+throws `DataApiSubscriptionError` when the plan is not active.
+
+The profile does not say which plan (Data or Pro) the account holds, and the
+docs do not map endpoints to plans. So the SDK cannot tell a Data-only account
+from a Pro one, and it does not restrict Pro endpoints locally.
+
 Responses are passed through as returned by Dhan; type them with the generic
 parameter (`client.scanx.technical<MyShape>(...)`).
 

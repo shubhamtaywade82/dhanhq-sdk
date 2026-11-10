@@ -15,6 +15,8 @@ export interface Endpoint {
   resource: string;
   method: string;
   verb: string;
+  /** The method sends `environment: "live"`, so it reads production in every mode. */
+  live: boolean;
   path: string;
 }
 
@@ -121,7 +123,8 @@ export function extractEndpoints(): Endpoint[] {
             if (seen.has(`${verb} ${url}`)) continue;
             seen.add(`${verb} ${url}`);
             const [resource, ...nested] = path.split(".");
-            endpoints.push({ resource, method: [...nested, member.name].join("."), verb, path: url });
+            const live = /environment:\s*"live"/.test(member.body);
+            endpoints.push({ resource, method: [...nested, member.name].join("."), verb, path: url, live });
           }
         }
       }
@@ -155,7 +158,8 @@ const TITLES: Record<string, string> = {
 };
 
 /** Where the call goes in hybrid and in full sandbox mode. */
-function hostCell(verb: string, path: string): [string, string] {
+function hostCell(verb: string, path: string, live: boolean): [string, string] {
+  if (live) return ["production", "production"];
   const cell = (mode: "hybrid" | "sandbox") => {
     if (environmentFor(mode, path) === "live") return "production";
     return sandboxSupports(verb, path) ? "sandbox" : "✗ unsupported";
@@ -194,7 +198,7 @@ export function renderMapping(endpoints: Endpoint[] = extractEndpoints()): strin
     lines.push(`## ${TITLES[resource] ?? resource} — \`client.${resource}\``, "");
     lines.push("| Verb | Path | SDK method | Hybrid mode | Sandbox mode |", "|---|---|---|---|---|");
     for (const endpoint of list) {
-      const [hybrid, sandbox] = hostCell(endpoint.verb, endpoint.path);
+      const [hybrid, sandbox] = hostCell(endpoint.verb, endpoint.path, endpoint.live);
       lines.push(
         `| ${endpoint.verb} | \`${endpoint.path}\` | \`client.${resource}.${endpoint.method}()\` | ${hybrid} | ${sandbox} |`,
       );

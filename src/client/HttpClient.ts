@@ -55,6 +55,12 @@ export interface RequestOptions<TBody = unknown> {
    * documented tier-specific limit narrower than the generic default.
    */
   tier?: ApiTier;
+  /**
+   * `"live"` sends this read-only request to production whatever the mode,
+   * for account checks that must read the real account (e.g. the Data API
+   * plan). Trading and data requests never set it.
+   */
+  environment?: "live";
 }
 
 export interface HttpClientDependencies {
@@ -116,7 +122,7 @@ export class HttpClient {
     // Refused before queueing or the circuit breaker: an unsupported sandbox
     // call is a caller error, never sent anywhere — and never to production.
     if (
-      this.environmentFor(options.url) === "sandbox" &&
+      this.routeFor(options) === "sandbox" &&
       !sandboxSupports(options.method, options.url)
     ) {
       throw new SandboxUnsupportedError(options.method, options.url);
@@ -193,6 +199,15 @@ export class HttpClient {
     return environmentFor(this.mode, url);
   }
 
+  /** Host for one request: `environment: "live"` overrides the mode's routing. */
+  private routeFor(
+    options: Pick<RequestOptions<unknown>, "url" | "environment">,
+  ): DhanEnvironment {
+    return options.environment === "live"
+      ? "live"
+      : this.environmentFor(options.url);
+  }
+
   public async getAccessToken(): Promise<string> {
     return this.authResolver.resolveAccessToken();
   }
@@ -209,7 +224,7 @@ export class HttpClient {
       const normalized = this.normalizeError(error, options.tier);
 
       if (this.isAuthenticationFailure(normalized)) {
-        if (this.usesDedicatedSandboxCredentials(options.url)) {
+        if (this.usesDedicatedSandboxCredentials(options)) {
           // The production renewal hook cannot fix a sandbox token.
           throw new AuthenticationError(
             `${options.method} ${options.url}`,
@@ -306,7 +321,7 @@ export class HttpClient {
   private async toAxiosConfig<TBody>(
     options: RequestOptions<TBody>,
   ): Promise<AxiosRequestConfig<TBody>> {
-    if (this.environmentFor(options.url) === "sandbox") {
+    if (this.routeFor(options) === "sandbox") {
       const { token, clientId } = await this.sandboxCredentials();
 
       return {
@@ -338,9 +353,11 @@ export class HttpClient {
     };
   }
 
-  private usesDedicatedSandboxCredentials(url: string): boolean {
+  private usesDedicatedSandboxCredentials(
+    options: Pick<RequestOptions<unknown>, "url" | "environment">,
+  ): boolean {
     return (
-      this.environmentFor(url) === "sandbox" &&
+      this.routeFor(options) === "sandbox" &&
       this.sandboxAuthResolver !== undefined
     );
   }
@@ -425,11 +442,12 @@ export class HttpClient {
           tier !== undefined &&
           DATA_SUBSCRIPTION_TIERS.includes(tier)
         ) {
+          const dhanMessage = parseDhanErrorBody(payload).errorMessage;
           return new DataApiSubscriptionError(
-            status,
-            payload,
-            error,
-            parseDhanErrorBody(payload).errorMessage,
+            "Dhan denied this data endpoint (DH-902): the account has no active Data API " +
+              "subscription, or lacks access to it. Check client.profile.dataSubscription()." +
+              (dhanMessage ? ` Dhan said: ${dhanMessage}` : ""),
+            { status, details: payload, cause: error },
           );
         }
 
