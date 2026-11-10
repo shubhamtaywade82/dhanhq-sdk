@@ -148,6 +148,7 @@ export class ExpiredOptionsData {
       url: "/charts/rollingoption",
       data: payload,
       safeToRetry: true,
+      tier: "data_api",
     });
   }
 

@@ -6,6 +6,31 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `DataApiSubscriptionError` (code `DATA_API_NOT_SUBSCRIBED`, an `ApiResponseError`
+  subclass). DH-902 on data-plan endpoints (market quote, option chain, charts,
+  expired options, ScanX) now throws it. Trading endpoints still throw
+  `ApiResponseError`.
+- `FeedDisconnectError`, `DataApiErrorCode`, `FEED_TERMINAL_DISCONNECT_CODES`,
+  and `WebSocketManager.onFatalError(callback)`. A server disconnect with a
+  terminal reason (804–810) halts the socket and is reported through these.
+
+### Changed
+
+- Terminal feed disconnects are no longer retried, including 806 for an account
+  without a Data API plan. `connect()` on that instance rejects with
+  `FeedDisconnectError`. Transient reasons such as 800 still reconnect.
+- Charts (`intraday`, `historical`, `option`) and expired options run on the
+  `data_api` tier (5 requests/sec). They previously used the generic queue.
+- `RATE_LIMITS` per-day caps match the documented values: orders 7,000, data
+  1,00,000. `perDay` is informational; only `perSecond` is enforced locally.
+
+### Fixed
+
+- `WebSocketManager` reconnects only the market feed. Reconnecting used to reopen
+  the order-update and depth sockets and could leave two market sockets live.
+
 ## [2.0.1] - 2026-10-24
 
 ### Fixed

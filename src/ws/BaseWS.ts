@@ -44,6 +44,19 @@ export abstract class BaseWS extends EventEmitter {
     this.blockedBy = error;
   }
 
+  /**
+   * Stops this socket after a server disconnect that reconnecting cannot clear.
+   * `disconnect()` marks the close as manual, so the close handler schedules no
+   * reconnect, and `block()` makes later `connect()` calls reject with `error`.
+   * Without this, a server that accepts the socket and then sends a terminal
+   * reason (e.g. 806) gets reconnected forever, because each `open` resets the
+   * attempt counter.
+   */
+  protected haltTerminally(error: Error): void {
+    this.block(error);
+    this.disconnect();
+  }
+
   public async connect(): Promise<void> {
     if (this.blockedBy) {
       throw this.blockedBy;

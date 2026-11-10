@@ -74,6 +74,7 @@ export class Charts {
       url: "/charts/rollingoption",
       data: request,
       safeToRetry: true,
+      tier: "data_api",
     });
   }
 
@@ -103,6 +104,7 @@ export class Charts {
       url: "/charts/intraday",
       data: payload,
       safeToRetry: true,
+      tier: "data_api",
     });
   }
 
@@ -132,6 +134,7 @@ export class Charts {
       url: "/charts/historical",
       data: payload,
       safeToRetry: true,
+      tier: "data_api",
     });
   }
 }

@@ -11,6 +11,10 @@ import type {
 } from "../types/ws.types";
 import { FeedRequest, MARKET_DEPTH_LIMITS } from "../constants";
 import { DhanError } from "../errors";
+import {
+  FeedDisconnectError,
+  isTerminalFeedDisconnect,
+} from "../errors/FeedDisconnectError";
 import { BaseWS } from "./BaseWS";
 
 const SUBSCRIBE_DEPTH = FeedRequest.SUBSCRIBE_DEPTH;
@@ -125,6 +129,12 @@ export class MarketDepthWS extends BaseWS {
     );
 
     for (const disconnect of disconnects) {
+      if (
+        disconnect.reasonCode !== undefined &&
+        isTerminalFeedDisconnect(disconnect.reasonCode)
+      ) {
+        this.haltTerminally(new FeedDisconnectError(disconnect.reasonCode));
+      }
       this.emit("disconnect", disconnect);
     }
 

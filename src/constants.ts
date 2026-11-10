@@ -355,18 +355,61 @@ export const TradingErrorCode = {
 } as const;
 
 /**
- * Published DhanHQ rate limits per API tier. Order APIs 10/sec, Data APIs
- * 5/sec, Market Quote 1/sec, Option Chain one call every 3 seconds.
+ * Data API error codes (`/v2` Annexure). Numeric codes arrive as the reason of
+ * a WebSocket disconnect frame; the REST surface reports the DH-900 series
+ * instead (see {@link TradingErrorCode}).
+ */
+export const DataApiErrorCode: Readonly<Record<number, string>> = {
+  800: "INTERNAL_SERVER_ERROR",
+  804: "INSTRUMENT_LIMIT_EXCEEDED",
+  805: "TOO_MANY_CONNECTIONS",
+  806: "DATA_API_NOT_SUBSCRIBED",
+  807: "ACCESS_TOKEN_EXPIRED",
+  808: "AUTH_FAILED",
+  809: "ACCESS_TOKEN_INVALID",
+  810: "CLIENT_ID_INVALID",
+  811: "INVALID_EXPIRY_DATE",
+  812: "INVALID_DATE_FORMAT",
+  813: "INVALID_SECURITY_ID",
+  814: "INVALID_REQUEST",
+};
+
+/**
+ * WebSocket disconnect reasons that reconnecting with the same token and
+ * subscriptions cannot clear: the account lacks the Data API plan, the token
+ * or client ID is bad, the instrument cap is exceeded, or the connection cap
+ * is hit (805 — the docs warn that continued excess can get the user blocked).
+ * Anything else (e.g. 800) is treated as transient and reconnected.
+ */
+export const FEED_TERMINAL_DISCONNECT_CODES: readonly number[] = [
+  804, 805, 806, 807, 808, 809, 810,
+];
+
+/**
+ * Published DhanHQ rate limits per API tier, from the rate-limit table at
+ * dhanhq.co/docs/v2 (Order 10/sec, 250/min, 1000/hr, 7,000/day; Data 5/sec,
+ * 1,00,000/day; Quote 1/sec; Option Chain one unique request per 3 seconds).
+ * Only `perSecond` is enforced locally; `perDay` is informational.
  */
 export const RATE_LIMITS = {
-  order_api: { perSecond: 10, perDay: 100_000 },
-  data_api: { perSecond: 5, perDay: 7_000 },
+  order_api: { perSecond: 10, perDay: 7_000 },
+  data_api: { perSecond: 5, perDay: 100_000 },
   quote_api: { perSecond: 1, perDay: Infinity },
   option_chain: { perSecond: 1 / 3, perDay: 4_800 },
   non_trading_api: { perSecond: 20, perDay: Infinity },
 } as const;
 
 export type ApiTier = keyof typeof RATE_LIMITS;
+
+/**
+ * Tiers that need an active Data API plan. For these tiers DH-902 ("invalid
+ * access") means the plan is missing, so the SDK reports it as such.
+ */
+export const DATA_SUBSCRIPTION_TIERS: readonly ApiTier[] = [
+  "data_api",
+  "quote_api",
+  "option_chain",
+];
 
 /** Indian market hours in IST, used by the risk pipeline. */
 export const MARKET_HOURS = {
