@@ -54,7 +54,7 @@ jobs:
       # Catches broken `exports` maps and declaration resolution before a
       # release rather than after.
       - name: Check published type resolution
-        run: npx --yes @arethetypeswrong/cli@latest --pack .
+        run: npx --yes @arethetypeswrong/cli@0.18.5 --pack .
 
       - name: Verify the tarball installs and imports
         run: |
